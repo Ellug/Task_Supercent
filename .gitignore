@@ -73,3 +73,23 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# =========================================================================
+# Additional Custom Ignores
+# =========================================================================
+
+# Ignore SecAssets folder in Assets
+/[Aa]ssets/SecAssets/
+
+# Visual Studio Code (VSC)
+.vscode/
+*.code-workspace
+
+# Additional Visual Studio files
+*.user
+*.userprefs
+*.sln.docstates
+.vs/
+
+# Local .NET CLI cache
+.dotnet/

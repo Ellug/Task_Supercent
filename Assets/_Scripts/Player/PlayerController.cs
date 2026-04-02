@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(PlayerModel), typeof(PlayerView), typeof(EquipBase))]
 [RequireComponent(typeof(ResourceStack))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IInteractionActor
 {
     private const string PlayerMapName = "Player";
     private const string MoveActionName = "Move";
@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private ResourceStack _resourceStack;
 
     [Header("Carry")]
-    [SerializeField] private ResourceDefinition _oreResource;
+    [SerializeField] private ResourceData _oreResource;
     [SerializeField] private GameObject _oreStackPrefab;
     [SerializeField] private Transform _oreStackRoot;
     [SerializeField, Min(1)] private int _oreStackCapacity = 30;
@@ -31,6 +31,10 @@ public class PlayerController : MonoBehaviour
     private InputAction _moveAction;
     private readonly List<GameObject> _spawnedOreViews = new();
     private bool _loggedStackMax;
+    private Vector2 _lastMoveInput;
+
+    public EquipBase Equip => _equip;
+    public ResourceStack CarryStack => _resourceStack;
 
     void Awake()
     {
@@ -78,6 +82,7 @@ public class PlayerController : MonoBehaviour
         // Move 액션 비활성화
         ToggleAction(_moveAction, false);
         _view?.StopMove();
+        _lastMoveInput = Vector2.zero;
     }
 
     void FixedUpdate()
@@ -87,8 +92,31 @@ public class PlayerController : MonoBehaviour
         Vector2 moveInput = _moveAction.ReadValue<Vector2>();
         // 입력 정규화 후 이동 적용
         Vector2 finalMoveInput = _model.ComposeMoveInput(moveInput);
+        _lastMoveInput = finalMoveInput;
 
         _view.ApplyMove(finalMoveInput, _model.MoveSpeed);
+    }
+
+    // 이동 입력 없음 + 실제 속도 임계값 이하일 때 인터랙션 가능 상태로 판단
+    public bool IsInteractionReady(float stopSpeedThreshold = 0.05f)
+    {
+        if (_lastMoveInput.sqrMagnitude > 0.0001f)
+            return false;
+
+        if (_view == null)
+            return false;
+
+        return _view.PlanarSpeed <= stopSpeedThreshold;
+    }
+
+    public bool TryAcquireEquip(EquipDefinition equip)
+    {
+        return _equip != null && _equip.TryAcquire(equip);
+    }
+
+    public bool HasEquipOrBetter(EquipDefinition equip)
+    {
+        return _equip != null && _equip.HasEquipOrBetter(equip);
     }
 
     void Update()
@@ -136,6 +164,7 @@ public class PlayerController : MonoBehaviour
         if (!hasMineInRange)
             return;
 
+        // 적재 공간이 없으면 채굴 중단
         if (_resourceStack != null && _oreResource != null && _resourceStack.GetRemaining(_oreResource) <= 0)
         {
             if (!_loggedStackMax)
@@ -149,7 +178,7 @@ public class PlayerController : MonoBehaviour
 
         _loggedStackMax = false;
 
-        if (!_equip.TryMine(mine, out ResourceDefinition yieldResource, out int yieldAmount, out bool depleted))
+        if (!_equip.TryMine(mine, out ResourceData yieldResource, out int yieldAmount, out bool depleted))
             return;
 
         if (!depleted || yieldResource != _oreResource || yieldAmount <= 0)
@@ -185,3 +214,4 @@ public class PlayerController : MonoBehaviour
         }
     }
 }
+

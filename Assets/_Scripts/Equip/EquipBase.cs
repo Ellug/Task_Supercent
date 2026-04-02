@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -56,6 +56,18 @@ public class EquipBase : MonoBehaviour
         return SetLevel(targetLevel, false);
     }
 
+    // equip이 현재 장비 레벨 이하인지 확인
+    public bool HasEquipOrBetter(EquipDefinition equip)
+    {
+        if (_levelLibrary == null || equip == null)
+            return false;
+
+        if (!_levelLibrary.TryGetLevel(equip, out int targetLevel))
+            return false;
+
+        return _currentLevel >= targetLevel;
+    }
+
     // 레벨 변경 후 뷰 교체 및 LevelChanged 발생 — allowSameLevel=false면 현재 이하 레벨은 무시
     public bool SetLevel(int level, bool allowSameLevel)
     {
@@ -80,7 +92,7 @@ public class EquipBase : MonoBehaviour
     }
 
     // 쿨타임·사거리 체크 후 단일 광산 채굴
-    public bool TryMine(Mine mine, out ResourceDefinition yieldResource, out int yieldAmount, out bool depleted)
+    public bool TryMine(Mine mine, out ResourceData yieldResource, out int yieldAmount, out bool depleted)
     {
         yieldResource = null;
         yieldAmount = 0;
@@ -130,7 +142,7 @@ public class EquipBase : MonoBehaviour
 
             _presentation?.PlayMineAction(mine.transform.position);
 
-            bool depleted = mine.TryMine(_mineDamage, out ResourceDefinition yieldResource, out int yieldAmount);
+            bool depleted = mine.TryMine(_mineDamage, out ResourceData yieldResource, out int yieldAmount);
             if (depleted)
                 _presentation?.PlayMineDepleted(mine.transform.position);
 
@@ -200,3 +212,4 @@ public class EquipBase : MonoBehaviour
         _currentViewInstance = null;
     }
 }
+

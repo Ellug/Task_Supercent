@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +7,7 @@ public class ResourceStack : MonoBehaviour
     [Serializable]
     public struct Slot
     {
-        public ResourceDefinition Resource;
+        public ResourceData Resource;
         public Transform Anchor;
         public Vector3 LocalOffset;
         public int Capacity;
@@ -16,10 +16,10 @@ public class ResourceStack : MonoBehaviour
 
     [SerializeField] private List<Slot> _slots = new();
 
-    private readonly Dictionary<ResourceDefinition, Slot> _slotByResource = new();
-    private readonly Dictionary<ResourceDefinition, int> _countByResource = new();
+    private readonly Dictionary<ResourceData, Slot> _slotByResource = new();
+    private readonly Dictionary<ResourceData, int> _countByResource = new();
 
-    public event Action<ResourceDefinition, int, int> Changed;
+    public event Action<ResourceData, int, int> Changed;
 
     void Awake()
     {
@@ -27,7 +27,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 단일 슬롯을 코드로 설정하고 딕셔너리 재구성
-    public void ConfigureSingleSlot(ResourceDefinition resource, Transform anchor, int capacity, float verticalSpacing, Vector3 localOffset)
+    public void ConfigureSingleSlot(ResourceData resource, Transform anchor, int capacity, float verticalSpacing, Vector3 localOffset)
     {
         _slots.Clear();
         _slots.Add(new Slot
@@ -66,7 +66,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 현재 적재 수량 반환
-    public int GetCount(ResourceDefinition resource)
+    public int GetCount(ResourceData resource)
     {
         if (resource == null)
             return 0;
@@ -75,7 +75,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 슬롯 최대 용량 반환
-    public int GetCapacity(ResourceDefinition resource)
+    public int GetCapacity(ResourceData resource)
     {
         if (resource == null)
             return 0;
@@ -84,7 +84,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 남은 여유 공간 반환
-    public int GetRemaining(ResourceDefinition resource)
+    public int GetRemaining(ResourceData resource)
     {
         int capacity = GetCapacity(resource);
         int count = GetCount(resource);
@@ -92,7 +92,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 여유 공간만큼 추가 — 실제 추가된 양을 added로 반환
-    public bool TryAdd(ResourceDefinition resource, int amount, out int added)
+    public bool TryAdd(ResourceData resource, int amount, out int added)
     {
         added = 0;
 
@@ -114,7 +114,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 보유량 내에서 차감 — 실제 제거된 양을 removed로 반환
-    public bool TryRemove(ResourceDefinition resource, int amount, out int removed)
+    public bool TryRemove(ResourceData resource, int amount, out int removed)
     {
         removed = 0;
 
@@ -131,7 +131,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 이 스택에서 target 스택으로 resource를 이동 — 수용 초과분은 반환
-    public bool TryMoveTo(ResourceStack target, ResourceDefinition resource, int amount, out int moved)
+    public bool TryMoveTo(ResourceStack target, ResourceData resource, int amount, out int moved)
     {
         moved = 0;
 
@@ -152,7 +152,7 @@ public class ResourceStack : MonoBehaviour
     }
 
     // 다음 적재 위치의 월드 좌표 반환 — 슬롯 앵커 + 수직 적층 오프셋 계산
-    public bool TryGetNextWorldPosition(ResourceDefinition resource, out Vector3 worldPosition)
+    public bool TryGetNextWorldPosition(ResourceData resource, out Vector3 worldPosition)
     {
         worldPosition = default;
 
@@ -168,3 +168,4 @@ public class ResourceStack : MonoBehaviour
         return true;
     }
 }
+

@@ -6,12 +6,27 @@ public class PlayerView : MonoBehaviour
 {
     [SerializeField] private Rigidbody _rigidbody;
 
+    // XZ 평면 기준 현재 이동 속도
+    public float PlanarSpeed
+    {
+        get
+        {
+            if (_rigidbody == null)
+                return 0f;
+
+            Vector3 velocity = _rigidbody.velocity;
+            velocity.y = 0f;
+            return velocity.magnitude;
+        }
+    }
+
     void Awake()
     {
         if (_rigidbody == null)
             _rigidbody = GetComponent<Rigidbody>();
     }
 
+    // 이동 방향으로 즉시 회전 후 Rigidbody 속도로 이동 적용
     public void ApplyMove(Vector2 moveInput, float moveSpeed)
     {
         Vector3 moveDirection = new(moveInput.x, 0f, moveInput.y);
@@ -29,6 +44,7 @@ public class PlayerView : MonoBehaviour
         _rigidbody.velocity = velocity;
     }
 
+    // XZ 속도를 0으로 즉시 정지
     public void StopMove()
     {
         if (_rigidbody == null)

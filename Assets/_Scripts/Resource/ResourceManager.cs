@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,7 +19,7 @@ public class ResourceManager : Singleton<ResourceManager>
     public int PlayerMoney => _playerMoney;
 
     public event Action<int> MoneyChanged;
-    public event Action<ResourceDefinition, int, Vector3> ResourceYielded;
+    public event Action<ResourceData, int, Vector3> ResourceYielded;
 
     // MineArea 자동 탐색 후 전체 셀에 광산 초기 스폰
     protected override void OnSingletonAwake()
@@ -104,7 +104,7 @@ public class ResourceManager : Singleton<ResourceManager>
     }
 
     // 셀의 광산을 채굴 — 성공 시 yieldPrefab과 yieldAmount 반환
-    public bool TryMine(Vector2Int cell, int power, out ResourceDefinition yieldResource, out int yieldAmount)
+    public bool TryMine(Vector2Int cell, int power, out ResourceData yieldResource, out int yieldAmount)
     {
         yieldResource = null;
         yieldAmount = 0;
@@ -220,7 +220,7 @@ public class ResourceManager : Singleton<ResourceManager>
     }
 
     // 광산 소진 시 ResourceYielded 발생, Money면 소지금 추가, 리스폰 예약
-    private void OnMineDepleted(Mine mine, ResourceDefinition yieldResource, int yieldAmount)
+    private void OnMineDepleted(Mine mine, ResourceData yieldResource, int yieldAmount)
     {
         if (mine == null)
             return;
@@ -259,3 +259,4 @@ public class ResourceManager : Singleton<ResourceManager>
         MoneyChanged?.Invoke(_playerMoney);
     }
 }
+

@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class Mine : MonoBehaviour, IPoolable
 {
     [Header("Mine")]
-    [SerializeField] private ResourceDefinition _yieldResource;
+    [SerializeField] private ResourceData _yieldResource;
     [SerializeField] private int _yieldAmount = 1;
     [SerializeField] private int _maxHp = 2;
 
@@ -14,7 +14,7 @@ public class Mine : MonoBehaviour, IPoolable
     public Vector2Int GridCell { get; private set; }
     public int CurrentHp => _currentHp;
 
-    public event Action<Mine, ResourceDefinition, int> Depleted;
+    public event Action<Mine, ResourceData, int> Depleted;
 
     void Awake()
     {
@@ -28,7 +28,7 @@ public class Mine : MonoBehaviour, IPoolable
     }
 
     // dmg 내구도를 깎고, 0이 되면 채굴 성공 후 Depleted 발생
-    public bool TryMine(int dmg, out ResourceDefinition yieldResource, out int yieldAmount)
+    public bool TryMine(int dmg, out ResourceData yieldResource, out int yieldAmount)
     {
         yieldResource = null;
         yieldAmount = 0;
@@ -63,3 +63,4 @@ public class Mine : MonoBehaviour, IPoolable
     {
     }
 }
+

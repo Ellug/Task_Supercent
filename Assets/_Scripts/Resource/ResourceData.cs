@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum ResourceCategory
 {
@@ -7,8 +7,8 @@ public enum ResourceCategory
 }
 
 // 리소스 메타데이터 ScriptableObject — 아이콘·카테고리·월드 뷰 프리팹 정의
-[CreateAssetMenu(menuName = "Game/Resource Definition", fileName = "ResourceDefinition")]
-public class ResourceDefinition : ScriptableObject
+[CreateAssetMenu(menuName = "Game/Resource Data", fileName = "ResourceData")]
+public class ResourceData : ScriptableObject
 {
     [SerializeField] private string _id;
     [SerializeField] private Sprite _icon;
@@ -21,3 +21,4 @@ public class ResourceDefinition : ScriptableObject
     public GameObject WorldViewPrefab => _worldViewPrefab;
     public bool IsMoney => _category == ResourceCategory.Money;
 }
+

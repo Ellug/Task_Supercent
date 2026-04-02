@@ -19,7 +19,7 @@ public class ResourceManager : Singleton<ResourceManager>
     public int PlayerMoney => _playerMoney;
 
     public event Action<int> MoneyChanged;
-    public event Action<ResourceBase, int, Vector3> ResourceYielded;
+    public event Action<ResourceDefinition, int, Vector3> ResourceYielded;
 
     // MineArea 자동 탐색 후 전체 셀에 광산 초기 스폰
     protected override void OnSingletonAwake()
@@ -104,15 +104,59 @@ public class ResourceManager : Singleton<ResourceManager>
     }
 
     // 셀의 광산을 채굴 — 성공 시 yieldPrefab과 yieldAmount 반환
-    public bool TryMine(Vector2Int cell, int power, out ResourceBase yieldPrefab, out int yieldAmount)
+    public bool TryMine(Vector2Int cell, int power, out ResourceDefinition yieldResource, out int yieldAmount)
     {
-        yieldPrefab = null;
+        yieldResource = null;
         yieldAmount = 0;
 
         if (!TryGetMine(cell, out Mine mine))
             return false;
 
-        return mine.TryMine(power, out yieldPrefab, out yieldAmount);
+        return mine.TryMine(power, out yieldResource, out yieldAmount);
+    }
+
+    // origin 전방(foward) range 내 활성 광산 중 가장 가까운 1개 반환
+    public bool TryGetMineInFront(Vector3 origin, Vector3 forward, float range, float minForwardDot, out Mine mine)
+    {
+        mine = null;
+
+        float rangeSqr = Mathf.Max(0f, range) * Mathf.Max(0f, range);
+        float bestDistanceSqr = float.MaxValue;
+
+        Vector3 flatForward = new Vector3(forward.x, 0f, forward.z);
+        if (flatForward.sqrMagnitude < 0.0001f)
+            flatForward = Vector3.forward;
+
+        flatForward.Normalize();
+        float forwardDotThreshold = Mathf.Clamp(minForwardDot, -1f, 1f);
+
+        foreach (Mine candidate in _mineByCell.Values)
+        {
+            if (candidate == null || !candidate.gameObject.activeInHierarchy)
+                continue;
+
+            Vector3 toMine = candidate.transform.position - origin;
+            toMine.y = 0f;
+
+            float distanceSqr = toMine.sqrMagnitude;
+            if (distanceSqr > rangeSqr)
+                continue;
+
+            if (distanceSqr > 0.0001f)
+            {
+                float dot = Vector3.Dot(flatForward, toMine.normalized);
+                if (dot < forwardDotThreshold)
+                    continue;
+            }
+
+            if (distanceSqr >= bestDistanceSqr)
+                continue;
+
+            bestDistanceSqr = distanceSqr;
+            mine = candidate;
+        }
+
+        return mine != null;
     }
 
     // 플레이어 소지금 증가 후 MoneyChanged 발생
@@ -176,7 +220,7 @@ public class ResourceManager : Singleton<ResourceManager>
     }
 
     // 광산 소진 시 ResourceYielded 발생, Money면 소지금 추가, 리스폰 예약
-    private void OnMineDepleted(Mine mine, ResourceBase yieldPrefab, int yieldAmount)
+    private void OnMineDepleted(Mine mine, ResourceDefinition yieldResource, int yieldAmount)
     {
         if (mine == null)
             return;
@@ -185,9 +229,9 @@ public class ResourceManager : Singleton<ResourceManager>
         if (_mineArea == null || !_mineArea.IsInside(cell))
             return;
 
-        ResourceYielded?.Invoke(yieldPrefab, yieldAmount, mine.transform.position);
+        ResourceYielded?.Invoke(yieldResource, yieldAmount, mine.transform.position);
 
-        if (yieldPrefab is Money)
+        if (yieldResource != null && yieldResource.IsMoney)
             AddMoney(yieldAmount);
 
         mine.gameObject.SetActive(false);

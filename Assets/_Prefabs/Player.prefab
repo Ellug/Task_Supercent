@@ -121,6 +121,8 @@ GameObject:
   - component: {fileID: 2426179924602204107}
   - component: {fileID: 8253618029180940386}
   - component: {fileID: 3867678400118706670}
+  - component: {fileID: 665500000000000001}
+  - component: {fileID: 665500000000000002}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -142,6 +144,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8391847807857631331}
+  - {fileID: 910000000000000002}
+  - {fileID: 910000000000000012}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6413068191552781769
@@ -285,3 +289,104 @@ MonoBehaviour:
     type: 3}
   _model: {fileID: 2426179924602204107}
   _view: {fileID: 8253618029180940386}
+  _equip: {fileID: 665500000000000001}
+  _resourceStack: {fileID: 665500000000000002}
+  _oreResource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
+  _oreStackPrefab: {fileID: 3590217679474135049, guid: 7707969143dc4844abf4ef355085e90c,
+    type: 3}
+  _oreStackRoot: {fileID: 910000000000000012}
+  _oreStackCapacity: 30
+  _oreStackSpacing: 0.35
+  _oreStackOffset: {x: 0, y: 0, z: 0}
+  _mineForwardDotMin: 0
+--- !u!114 &665500000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5694858553860438943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb9cdad9e3a7c9a4eb1e3553ca93bdf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _equipAnchor: {fileID: 910000000000000002}
+  _levelLibrary: {fileID: 11400000, guid: 0e67b29fd878479cb01e90028e0b8801, type: 2}
+  _startLevel: 0
+  _mineDamage: 2
+--- !u!114 &665500000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5694858553860438943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b978c9572915aa4b8feea331a98d014, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _slots: []
+--- !u!1 &910000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 910000000000000002}
+  m_Layer: 0
+  m_Name: EquipAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &910000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.4, y: 0.35, z: 0.35}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 153659513103456187}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &910000000000000011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 910000000000000012}
+  m_Layer: 0
+  m_Name: OreStackRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &910000000000000012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910000000000000011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.1, z: -1.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 153659513103456187}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

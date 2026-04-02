@@ -118,7 +118,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f441c1875412dc4889ce7f9c0d0e5e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _yieldPrefab: {fileID: 1685217053856785062, guid: 7707969143dc4844abf4ef355085e90c,
-    type: 3}
+  _yieldResource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
   _yieldAmount: 1
   _maxHp: 2

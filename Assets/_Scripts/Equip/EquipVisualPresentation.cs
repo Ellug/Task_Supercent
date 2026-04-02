@@ -8,12 +8,9 @@ public class EquipVisualPresentation : EquipPresentationBase
     [SerializeField] private ParticleSystem _mineFx;
     [SerializeField] private ParticleSystem _mineDepletedFx;
 
-    // owner 하위로 부모 변경 후 비주얼 활성화
-    public override void OnEquipped(Transform owner, EquipBase equip)
+    // 장비 비주얼 활성화
+    public override void OnEquipped(Transform owner, EquipDefinition equip)
     {
-        if (owner != null)
-            transform.SetParent(owner, false);
-
         gameObject.SetActive(true);
 
         if (_visualRoot != null)

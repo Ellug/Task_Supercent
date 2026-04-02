@@ -1,65 +1,202 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class EquipBase : MonoBehaviour
+public class EquipBase : MonoBehaviour
 {
-    [Header("Mine Data")]
-    [SerializeField] private EquipType _equipType;
+    [SerializeField] private Transform _equipAnchor;
+    [SerializeField] private EquipLevelLibrary _levelLibrary;
+    [SerializeField] private int _startLevel = 0;
     [SerializeField] private int _mineDamage = 1;
-    [SerializeField] private float _mineRange = 2f;
-    [SerializeField] private float _mineInterval = 0.6f;
 
-    [Header("Presentation")]
-    [SerializeField] private EquipPresentationBase _presentation;
-
+    private int _currentLevel;
+    private EquipDefinition _currentEquip;
     private float _nextMineTime;
 
-    public EquipType EquipType => _equipType;
-    public int MineDamage => _mineDamage;
-    public float MineRange => _mineRange;
-    public float MineInterval => _mineInterval;
+    private GameObject _currentViewInstance;
+    private EquipPresentationBase _presentation;
 
-    // 장착 시 쿨타임 초기화 및 Presentation에 owner 전달
-    public virtual void OnEquipped(Transform owner)
+    public int CurrentLevel => _currentLevel;
+    public EquipDefinition CurrentEquip => _currentEquip;
+
+    public event Action<int, EquipDefinition> LevelChanged;
+
+    void Awake()
     {
+        if (_equipAnchor == null)
+            _equipAnchor = transform;
+
+        SetLevel(_startLevel, true);
+    }
+
+    void OnDestroy()
+    {
+        RemoveCurrentView();
+    }
+
+    // id로 장비를 찾아 레벨 업그레이드 시도
+    public bool TryAcquireById(string id)
+    {
+        if (_levelLibrary == null)
+            return false;
+
+        EquipDefinition equip = _levelLibrary.GetById(id);
+        return TryAcquire(equip);
+    }
+
+    // equip의 레벨을 라이브러리에서 조회해 SetLevel 호출
+    public bool TryAcquire(EquipDefinition equip)
+    {
+        if (_levelLibrary == null || equip == null)
+            return false;
+
+        if (!_levelLibrary.TryGetLevel(equip, out int targetLevel))
+            return false;
+
+        return SetLevel(targetLevel, false);
+    }
+
+    // 레벨 변경 후 뷰 교체 및 LevelChanged 발생 — allowSameLevel=false면 현재 이하 레벨은 무시
+    public bool SetLevel(int level, bool allowSameLevel)
+    {
+        if (!allowSameLevel && level <= _currentLevel)
+            return false;
+
+        int nextLevel = Mathf.Max(0, level);
+        EquipDefinition nextEquip = _levelLibrary != null ? _levelLibrary.GetEquipForLevel(nextLevel) : null;
+
+        if (_currentLevel == nextLevel && _currentEquip == nextEquip)
+            return true;
+
+        RemoveCurrentView();
+
+        _currentLevel = nextLevel;
+        _currentEquip = nextEquip;
         _nextMineTime = 0f;
-        if (_presentation != null)
-            _presentation.OnEquipped(owner, this);
+        SetMiningRangeVisual(false);
+
+        LevelChanged?.Invoke(_currentLevel, _currentEquip);
+        return true;
     }
 
-    // 해제 시 Presentation 비활성화
-    public virtual void OnUnequipped()
+    // 쿨타임·사거리 체크 후 단일 광산 채굴
+    public bool TryMine(Mine mine, out ResourceDefinition yieldResource, out int yieldAmount, out bool depleted)
     {
-        if (_presentation != null)
-            _presentation.OnUnequipped();
-    }
-
-    // 쿨타임·사거리 체크 후 mine을 채굴 — 소진되면 Depleted 연출도 재생
-    public bool TryExecuteMine(Mine mine, Vector3 ownerPosition, float now, out ResourceBase yieldPrefab, out int yieldAmount, out bool depleted)
-    {
-        yieldPrefab = null;
+        yieldResource = null;
         yieldAmount = 0;
         depleted = false;
 
-        if (mine == null)
+        if (_currentEquip == null || mine == null)
             return false;
 
+        float now = Time.time;
         if (now < _nextMineTime)
             return false;
 
-        float rangeSqr = _mineRange * _mineRange;
-        if ((mine.transform.position - ownerPosition).sqrMagnitude > rangeSqr)
+        if (!IsInRange(mine))
             return false;
 
-        _nextMineTime = now + _mineInterval;
+        _nextMineTime = now + _currentEquip.MineInterval;
+        _presentation?.PlayMineAction(mine.transform.position);
 
-        if (_presentation != null)
-            _presentation.PlayMineAction(mine.transform.position);
-
-        depleted = mine.TryMine(_mineDamage, out yieldPrefab, out yieldAmount);
-
-        if (depleted && _presentation != null)
-            _presentation.PlayMineDepleted(mine.transform.position);
+        depleted = mine.TryMine(_mineDamage, out yieldResource, out yieldAmount);
+        if (depleted)
+            _presentation?.PlayMineDepleted(mine.transform.position);
 
         return true;
+    }
+
+    // 쿨타임·사거리 체크 후 SimultaneousMineCount 한도로 복수 광산 채굴 — 채굴 성공 수 반환
+    public int TryMineMulti(IReadOnlyList<Mine> mines, List<EquipMineResult> resultBuffer = null)
+    {
+        if (_currentEquip == null || mines == null || mines.Count == 0)
+            return 0;
+
+        float now = Time.time;
+        if (now < _nextMineTime)
+            return 0;
+
+        int mineCount = 0;
+        int maxMineCount = _currentEquip.SimultaneousMineCount;
+
+        for (int i = 0; i < mines.Count && mineCount < maxMineCount; i++)
+        {
+            Mine mine = mines[i];
+            if (mine == null || !mine.gameObject.activeInHierarchy)
+                continue;
+
+            if (!IsInRange(mine))
+                continue;
+
+            _presentation?.PlayMineAction(mine.transform.position);
+
+            bool depleted = mine.TryMine(_mineDamage, out ResourceDefinition yieldResource, out int yieldAmount);
+            if (depleted)
+                _presentation?.PlayMineDepleted(mine.transform.position);
+
+            resultBuffer?.Add(new EquipMineResult(mine, yieldResource, yieldAmount, depleted));
+            mineCount++;
+        }
+
+        if (mineCount > 0)
+            _nextMineTime = now + _currentEquip.MineInterval;
+
+        return mineCount;
+    }
+
+    // mine이 현재 장비 사거리 안에 있는지 확인
+    private bool IsInRange(Mine mine)
+    {
+        float range = _currentEquip.MineRange;
+        float rangeSqr = range * range;
+        return (mine.transform.position - transform.position).sqrMagnitude <= rangeSqr;
+    }
+
+    // 채굴 범위에 Mine이 있을 때 장비 프리팹 표시
+    public void SetMiningRangeVisual(bool visible)
+    {
+        if (!visible)
+        {
+            if (_currentViewInstance != null && _currentViewInstance.activeSelf)
+                _currentViewInstance.SetActive(false);
+
+            return;
+        }
+
+        EnsureCurrentView();
+        if (_currentViewInstance != null && !_currentViewInstance.activeSelf)
+            _currentViewInstance.SetActive(true);
+    }
+
+    // 현재 레벨 장비의 뷰 인스턴스를 필요할 때 생성
+    private void EnsureCurrentView()
+    {
+        if (_currentEquip == null || _currentViewInstance != null)
+            return;
+
+        GameObject viewPrefab = _currentEquip.PlayerViewPrefab;
+        if (viewPrefab == null)
+            return;
+
+        _currentViewInstance = Instantiate(viewPrefab, _equipAnchor);
+        _currentViewInstance.transform.localPosition = Vector3.zero;
+        _currentViewInstance.transform.localRotation = Quaternion.identity;
+        _currentViewInstance.transform.localScale = Vector3.one;
+
+        _presentation = _currentViewInstance.GetComponentInChildren<EquipPresentationBase>(true);
+        _presentation?.OnEquipped(_equipAnchor, _currentEquip);
+        _currentViewInstance.SetActive(false);
+    }
+
+    // Presentation 해제 후 뷰 인스턴스 파괴
+    private void RemoveCurrentView()
+    {
+        _presentation?.OnUnequipped();
+        _presentation = null;
+
+        if (_currentViewInstance != null)
+            Destroy(_currentViewInstance);
+
+        _currentViewInstance = null;
     }
 }

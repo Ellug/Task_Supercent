@@ -42,14 +42,13 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (_moveAction == null || _model == null || _view == null)
-            return;
+        if (_moveAction == null || _model == null || _view == null) return;
 
         Vector2 moveInput = _moveAction.ReadValue<Vector2>();
         // 입력 정규화 후 이동 적용
         Vector2 finalMoveInput = _model.ComposeMoveInput(moveInput);
 
-        _view.ApplyMove(finalMoveInput, _model.MoveSpeed, 0, Time.fixedDeltaTime);
+        _view.ApplyMove(finalMoveInput, _model.MoveSpeed, 1, Time.fixedDeltaTime);
     }
 
     private void BindActions()

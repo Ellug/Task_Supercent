@@ -15,3 +15,7 @@ MonoBehaviour:
   _entries:
   - _level: 0
     _equip: {fileID: 11400000, guid: 4d885233c0344d1aa6e8ec22f0b5613c, type: 2}
+  - _level: 1
+    _equip: {fileID: 11400000, guid: ad62147f97ef44e4876b1a2b8b247f69, type: 2}
+  - _level: 2
+    _equip: {fileID: 11400000, guid: ae22d1bd11d24801a402b9493364759c, type: 2}

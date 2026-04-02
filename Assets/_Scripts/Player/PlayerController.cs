@@ -77,6 +77,7 @@ public class PlayerController : MonoBehaviour
     {
         // Move 액션 비활성화
         ToggleAction(_moveAction, false);
+        _view?.StopMove();
     }
 
     void FixedUpdate()
@@ -87,7 +88,7 @@ public class PlayerController : MonoBehaviour
         // 입력 정규화 후 이동 적용
         Vector2 finalMoveInput = _model.ComposeMoveInput(moveInput);
 
-        _view.ApplyMove(finalMoveInput, _model.MoveSpeed, 1, Time.fixedDeltaTime);
+        _view.ApplyMove(finalMoveInput, _model.MoveSpeed);
     }
 
     void Update()

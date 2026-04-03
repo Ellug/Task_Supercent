@@ -6628,6 +6628,21 @@ PrefabInstance:
       propertyPath: _moveSpeed
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 3867678400118706670, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _submitTickInterval
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 3867678400118706670, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _collectTickInterval
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 3867678400118706670, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _transferTickInterval
+      value: 0.01
+      objectReference: {fileID: 0}
     - target: {fileID: 5694858553860438943, guid: 85272274d7616a5409a713712c4b47ad,
         type: 3}
       propertyPath: m_Name

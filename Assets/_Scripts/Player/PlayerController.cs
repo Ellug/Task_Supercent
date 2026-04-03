@@ -22,10 +22,8 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     [SerializeField, Range(-1f, 1f)] private float _mineForwardDotMin = 0f;
 
     [Header("Interaction Transfer")]
-    [SerializeField, Min(0f)] private float _submitTickInterval = 0.05f;
-    [SerializeField, Min(1)] private int _submitAmountPerTick = 1;
-    [SerializeField, Min(0f)] private float _collectTickInterval = 0.05f;
-    [SerializeField, Min(1)] private int _collectAmountPerTick = 1;
+    [SerializeField, Min(0f)] private float _transferTickInterval = 0.01f;
+    [SerializeField, Min(1)] private int _transferAmountPerTick = 1;
 
     private InputAction _moveAction;
     private bool _loggedStackMax;
@@ -33,10 +31,10 @@ public class PlayerController : MonoBehaviour, IInteractionActor
 
     public EquipBase Equip => _equip;
     public ResourceStack CarryStack => _resourceStack;
-    public float SubmitTickInterval => Mathf.Max(0f, _submitTickInterval);
-    public int SubmitAmountPerTick => Mathf.Max(1, _submitAmountPerTick);
-    public float CollectTickInterval => Mathf.Max(0f, _collectTickInterval);
-    public int CollectAmountPerTick => Mathf.Max(1, _collectAmountPerTick);
+    public float SubmitTickInterval => Mathf.Max(0f, _transferTickInterval);
+    public int SubmitAmountPerTick => Mathf.Max(1, _transferAmountPerTick);
+    public float CollectTickInterval => Mathf.Max(0f, _transferTickInterval);
+    public int CollectAmountPerTick => Mathf.Max(1, _transferAmountPerTick);
 
     void Awake()
     {

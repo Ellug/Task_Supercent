@@ -20,7 +20,7 @@ public class InteractionZoneLibrary : ScriptableObject
 
     [Header("Purchase")]
     [SerializeField] private EquipData _purchaseEquip;
-    [SerializeField] private int _priceOverride = -1;
+    [SerializeField] private int _priceOverride = -1;  // -1이면 PurchaseEquip.Price 사용
 
     public InteractionZoneType Type => _type;
     public bool ZoneEnabled => _zoneEnabled;

@@ -56,13 +56,38 @@ public class MineArea : MonoBehaviour
     // BoxCollider 또는 직접 설정한 areaSize 반환
     private Vector2 GetAreaSize()
     {
+        if (TryGetColliderArea(out Vector2 colliderAreaSize, out _))
+            return colliderAreaSize;
+
         return new Vector2(Mathf.Max(0.1f, _areaSize.x), Mathf.Max(0.1f, _areaSize.y));
     }
 
     // BoxCollider 또는 직접 설정한 중심 오프셋 반환
     private Vector3 GetLocalCenterOffset()
     {
+        if (TryGetColliderArea(out _, out Vector3 colliderLocalCenter))
+            return colliderLocalCenter;
+
         return _localCenterOffset;
+    }
+
+    // 콜라이더가 있으면 center/size(x,z)를 그리드 기준으로 사용
+    private bool TryGetColliderArea(out Vector2 areaSize, out Vector3 localCenter)
+    {
+        _areaCollider ??= GetComponent<BoxCollider>();
+        if (_areaCollider == null)
+        {
+            areaSize = default;
+            localCenter = default;
+            return false;
+        }
+
+        Vector3 colliderSize = _areaCollider.size;
+        areaSize = new Vector2(
+            Mathf.Max(0.1f, Mathf.Abs(colliderSize.x)),
+            Mathf.Max(0.1f, Mathf.Abs(colliderSize.z)));
+        localCenter = _areaCollider.center;
+        return true;
     }
 
 #if UNITY_EDITOR

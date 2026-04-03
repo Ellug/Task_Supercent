@@ -293,10 +293,8 @@ MonoBehaviour:
   _equip: {fileID: 665500000000000001}
   _resourceStack: {fileID: 665500000000000002}
   _mineForwardDotMin: 0
-  _submitTickInterval: 0.05
-  _submitAmountPerTick: 1
-  _collectTickInterval: 0.05
-  _collectAmountPerTick: 1
+  _transferTickInterval: 0.05
+  _transferAmountPerTick: 1
 --- !u!114 &665500000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0

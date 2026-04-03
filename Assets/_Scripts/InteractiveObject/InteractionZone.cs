@@ -86,7 +86,8 @@ public class InteractionZone : MonoBehaviour
         if (_completeOnce && _runtime.Completed)
             return;
 
-        if (_requirePlayerIdle && !_actorInZone.IsInteractionReady(_stopSpeedThreshold))
+        bool requireIdle = _type == InteractionZoneType.PurchaseEquip && _requirePlayerIdle;
+        if (requireIdle && !_actorInZone.IsInteractionReady(_stopSpeedThreshold))
             return;
 
         if (Time.time < _nextTickTime)

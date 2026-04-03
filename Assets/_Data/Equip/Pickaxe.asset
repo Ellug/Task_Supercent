@@ -18,5 +18,5 @@ MonoBehaviour:
     type: 3}
   _price: 0
   _mineRange: 3.5
-  _mineInterval: 1
+  _mineInterval: 0.1
   _simultaneousMineCount: 1

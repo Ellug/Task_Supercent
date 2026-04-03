@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 씬 시작 시 각 존의 초기 활성 여부와 진행 상태 초기화 방식을 정의
 [Serializable]
 public struct InteractionZoneInitialStateData
 {
     [SerializeField] private InteractionZoneId _zoneId;
     [SerializeField] private bool _zoneEnabled;
     [SerializeField] private bool _resetProgress;
+    // true면 ResetProgress 전에 Library를 먼저 적용 (Library 설정값 기준으로 초기화)
     [SerializeField] private bool _applyLibraryBeforeReset;
 
     public InteractionZoneId ZoneId => _zoneId;
@@ -16,11 +18,12 @@ public struct InteractionZoneInitialStateData
     public bool ApplyLibraryBeforeReset => _applyLibraryBeforeReset;
 }
 
+// 특정 존의 이벤트 발생 시 다른 존에 적용할 전이 한 건을 정의
 [Serializable]
 public struct InteractionZoneTransitionData
 {
     [SerializeField] private InteractionZoneId _sourceZoneId;
-    [SerializeField] private InteractionZoneFlowTrigger _trigger;
+    [SerializeField] private InteractionZoneFlowTrigger _trigger;   // OnFirstInteraction / OnCompleted
     [SerializeField] private InteractionZoneId _targetZoneId;
     [SerializeField] private InteractionZoneTransitionOperation _operation;
     [SerializeField] private bool _boolValue;
@@ -36,12 +39,13 @@ public struct InteractionZoneTransitionData
     public InteractionZoneLibrary LibraryValue => _libraryValue;
 }
 
+// 특정 존 완료 시 대상 존의 구매 단계를 다음 장비로 업그레이드하는 규칙 정의
 [Serializable]
 public struct InteractionZonePurchaseUpgradeData
 {
-    [SerializeField] private InteractionZoneId _triggerZoneId;
-    [SerializeField] private InteractionZoneId _targetZoneId;
-    [SerializeField] private string _equipId;
+    [SerializeField] private InteractionZoneId _triggerZoneId;  // 이 존이 완료되면 규칙 실행
+    [SerializeField] private InteractionZoneId _targetZoneId;  // 업그레이드할 구매 존
+    [SerializeField] private string _equipId;                  // 다음 단계 장비 ID
     [SerializeField, Min(1)] private int _requiredAmount;
     [SerializeField] private bool _zoneEnabledAfterUpgrade;
     [SerializeField] private bool _completeOnce;
@@ -54,6 +58,8 @@ public struct InteractionZonePurchaseUpgradeData
     public bool CompleteOnce => _completeOnce;
 }
 
+// 씬 전체 InteractionZone 흐름 데이터를 보관하는 SO
+// InteractionZoneFlowBootstrap.Apply()에 전달해 씬 흐름 초기화에 사용
 [CreateAssetMenu(menuName = "Game/Interaction/Flow Library", fileName = "InteractionZoneFlowLibrary")]
 public class InteractionZoneFlowLibrary : ScriptableObject
 {

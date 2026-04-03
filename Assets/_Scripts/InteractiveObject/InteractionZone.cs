@@ -268,6 +268,9 @@ public class InteractionZone : MonoBehaviour
     {
         if (actor != null)
         {
+            if (_type == InteractionZoneType.PurchaseEquip)
+                return actor.SubmitTickInterval;
+
             if (_type == InteractionZoneType.SubmitResource)
                 return actor.SubmitTickInterval;
 
@@ -282,6 +285,9 @@ public class InteractionZone : MonoBehaviour
     {
         if (actor != null)
         {
+            if (_type == InteractionZoneType.PurchaseEquip)
+                return actor.SubmitAmountPerTick;
+
             if (_type == InteractionZoneType.SubmitResource)
                 return actor.SubmitAmountPerTick;
 

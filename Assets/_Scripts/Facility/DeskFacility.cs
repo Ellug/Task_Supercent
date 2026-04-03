@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Desk 시설: Submit Zone으로 들어온 Cuff를 입력 스택으로 적재
-// NPC 처리/돈 생산은 다음 단계에서 연결
+// Prisoner 지급은 Prisoner별 int 카운트로만 관리
 public class DeskFacility : FacilityBase
 {
     [Header("Zone Binding")]
@@ -13,16 +13,34 @@ public class DeskFacility : FacilityBase
     [SerializeField] private Transform _submitStackRoot;
     [SerializeField] private ResourceData _cuffResource;
     [SerializeField, Min(1)] private int _maxBufferedCuff = 240;
+    [SerializeField, Min(1)] private int _maxCuffPerPrisoner = 4;
     [SerializeField, Min(0f)] private float _submitLayerSpacing = 0.22f;
     [SerializeField] private Vector3 _submitLocalOffset = new(0f, 0.08f, 0f);
 
-    [Header("Common")]
-    [SerializeField] private bool _disableSpawnedColliders = true;
+    [Header("Money Output")]
+    [SerializeField] private InteractionZone _collectZone;
+    [SerializeField] private Transform _collectStackRoot;
+    [SerializeField] private ResourceData _moneyResource;
+    [SerializeField, Min(1)] private int _rewardMoneyPerPrisoner = 10;
+    [SerializeField, Min(1)] private int _maxCollectStored = 500;
+    [SerializeField, Min(1)] private int _collectColumns = 2;
+    [SerializeField, Min(1)] private int _collectRows = 3;
+    [SerializeField, Min(0f)] private float _collectColumnSpacing = 0.2f;
+    [SerializeField, Min(0f)] private float _collectRowSpacing = 0.3f;
+    [SerializeField, Min(0f)] private float _collectLayerSpacing = 0.13f;
+    [SerializeField] private Vector3 _collectLocalOffset = new(0f, 0.08f, 0f);
+    [SerializeField] private Vector3 _moneyViewEulerAngles = new(0f, 45f, 0f);
 
     private readonly List<GameObject> _cuffViews = new();
+    private readonly List<GameObject> _moneyViews = new();
+    private Prisoner _supplyTarget;
+    private int _curCuff;
+    private BoxCollider _collectZoneCollider;
 
     public int BufferedCuffCount => _cuffViews.Count;
-    public InteractionZone CollectZone => _embeddedCollectZone;
+    public int MaxCuffPerPrisoner => Mathf.Max(1, _maxCuffPerPrisoner);
+    public int CurCuff => _curCuff;
+    public InteractionZone CollectZone => ResolveCollectZone();
 
     protected override void Awake()
     {
@@ -31,13 +49,30 @@ public class DeskFacility : FacilityBase
         if (!HasInputZone && _embeddedInputZone != null)
             BindInputZone(_embeddedInputZone);
 
+        if (_collectZone == null && _embeddedCollectZone != null)
+            _collectZone = _embeddedCollectZone;
+
         if (_submitStackRoot == null)
             _submitStackRoot = transform;
+
+        if (_collectStackRoot == null && _collectZone != null)
+            _collectStackRoot = _collectZone.transform;
+
+        _collectZoneCollider = ResolveCollectZoneCollider();
+    }
+
+    void LateUpdate()
+    {
+        SyncMoneyVisuals();
     }
 
     void OnDestroy()
     {
         PooledViewBridge.ReleaseAll(_cuffViews);
+        PooledViewBridge.ReleaseAll(_moneyViews);
+        _supplyTarget = null;
+        _curCuff = 0;
+        _collectZoneCollider = null;
     }
 
     protected override bool CanConsume(ResourceData resource)
@@ -72,31 +107,95 @@ public class DeskFacility : FacilityBase
         }
     }
 
-    // 다음 단계(NPC 처리)에서 호출: 입력 버퍼에서 Cuff를 소비
-    public bool TryConsumeBufferedCuff(int amount, out int consumed)
+    // 지정 Prisoner에게 Desk 버퍼 Cuff를 지급
+    // Prisoner 쪽은 int만 갱신하고, Desk 스택 뷰는 풀 반환으로 제거
+    public bool TrySupplyCuffToPrisoner(Prisoner prisoner, int amountPerTick, out int supplied, out int currentCuff)
     {
-        consumed = 0;
-        int targetAmount = Mathf.Min(Mathf.Max(1, amount), _cuffViews.Count);
+        supplied = 0;
+        currentCuff = 0;
+        if (prisoner == null)
+            return false;
 
+        if (_supplyTarget != prisoner)
+        {
+            _supplyTarget = prisoner;
+            _curCuff = 0;
+        }
+
+        int current = _curCuff;
+        int max = MaxCuffPerPrisoner;
+        if (current >= max)
+        {
+            currentCuff = current;
+            return false;
+        }
+
+        int need = max - current;
+        int targetAmount = Mathf.Min(Mathf.Max(1, amountPerTick), need, _cuffViews.Count);
         for (int i = 0; i < targetAmount; i++)
         {
             int lastIndex = _cuffViews.Count - 1;
             PooledViewBridge.Release(_cuffViews[lastIndex]);
             _cuffViews.RemoveAt(lastIndex);
-            consumed++;
+            supplied++;
         }
 
-        return consumed > 0;
+        _curCuff = current + supplied;
+        currentCuff = _curCuff;
+        return supplied > 0;
+    }
+
+    public int GetPrisonerCuff(Prisoner prisoner)
+    {
+        if (prisoner == null || _supplyTarget != prisoner)
+            return 0;
+
+        return _curCuff;
+    }
+
+    public bool IsPrisonerCuffFilled(Prisoner prisoner)
+    {
+        return _supplyTarget == prisoner && _curCuff >= MaxCuffPerPrisoner;
+    }
+
+    public void ResetPrisonerCuff(Prisoner prisoner)
+    {
+        if (prisoner == null)
+            return;
+
+        _supplyTarget = prisoner;
+        _curCuff = 0;
+    }
+
+    public void RemovePrisonerCuff(Prisoner prisoner)
+    {
+        if (prisoner == null || _supplyTarget != prisoner)
+            return;
+
+        _supplyTarget = null;
+        _curCuff = 0;
+    }
+
+    public bool TryAddMoneyRewardForPrisonerPass()
+    {
+        InteractionZone collectZone = ResolveCollectZone();
+        if (collectZone == null)
+            return false;
+
+        int remaining = Mathf.Max(0, Mathf.Max(1, _maxCollectStored) - collectZone.StoredAmount);
+        if (remaining <= 0)
+            return false;
+
+        int rewardAmount = Mathf.Min(Mathf.Max(1, _rewardMoneyPerPrisoner), remaining);
+        collectZone.AddStoredAmount(rewardAmount);
+        SyncMoneyVisuals();
+        return true;
     }
 
     private void SpawnCuffView(GameObject cuffPrefab, int index)
     {
         Vector3 position = GetStackWorldPosition(index);
         GameObject view = PooledViewBridge.Spawn(cuffPrefab, position, Quaternion.identity, transform, true);
-
-        if (_disableSpawnedColliders)
-            DisableAllColliders(view);
-
         _cuffViews.Add(view);
     }
 
@@ -104,17 +203,14 @@ public class DeskFacility : FacilityBase
     private Vector3 GetStackWorldPosition(int index)
     {
         Transform root = _submitStackRoot != null ? _submitStackRoot : transform;
-        float yOffset = index * Mathf.Max(0f, _submitLayerSpacing);
-
-        Vector3 axisX = GetHorizontalAxis(root.right, Vector3.right);
-        Vector3 axisZ = GetHorizontalAxis(root.forward, Vector3.forward);
-
-        Vector3 position = root.position;
-        position += axisX * _submitLocalOffset.x;
-        position += axisZ * _submitLocalOffset.z;
-        position += Vector3.up * _submitLocalOffset.y;
-
-        return position + (Vector3.up * yOffset);
+        return FacilityStackUtility.GetColumnLayerWorldPosition(
+            root,
+            index,
+            1,
+            0f,
+            _submitLayerSpacing,
+            _submitLocalOffset,
+            false);
     }
 
     private ResourceData ResolveCuffResource()
@@ -131,21 +227,152 @@ public class DeskFacility : FacilityBase
         return cuff != null ? cuff.WorldViewPrefab : null;
     }
 
-    private static Vector3 GetHorizontalAxis(Vector3 sourceAxis, Vector3 fallback)
+    private void SyncMoneyVisuals()
     {
-        Vector3 axis = sourceAxis;
-        axis.y = 0f;
+        FacilityStackUtility.CleanupMissing(_moneyViews);
 
-        if (axis.sqrMagnitude < 0.0001f)
-            axis = fallback;
+        InteractionZone collectZone = ResolveCollectZone();
+        GameObject moneyPrefab = ResolveMoneyPrefab();
+        if (collectZone == null || moneyPrefab == null)
+        {
+            PooledViewBridge.ReleaseAll(_moneyViews);
+            return;
+        }
 
-        return axis.normalized;
+        int targetCount = Mathf.Clamp(collectZone.StoredAmount, 0, Mathf.Max(1, _maxCollectStored));
+        while (_moneyViews.Count > targetCount)
+        {
+            int lastIndex = _moneyViews.Count - 1;
+            PooledViewBridge.Release(_moneyViews[lastIndex]);
+            _moneyViews.RemoveAt(lastIndex);
+        }
+
+        while (_moneyViews.Count < targetCount)
+            SpawnMoneyView(moneyPrefab, _moneyViews.Count);
+
+        Transform stackRoot = ResolveCollectStackRoot();
+        int columns = Mathf.Max(1, _collectColumns);
+        int rows = Mathf.Max(1, _collectRows);
+        Quaternion moneyRotation = Quaternion.Euler(_moneyViewEulerAngles);
+
+        for (int i = 0; i < _moneyViews.Count; i++)
+        {
+            GameObject view = _moneyViews[i];
+            if (view == null)
+                continue;
+
+            view.transform.position = GetGridStackWorldPosition(
+                stackRoot,
+                i,
+                columns,
+                rows,
+                _collectColumnSpacing,
+                _collectRowSpacing,
+                _collectLayerSpacing,
+                _collectLocalOffset);
+            view.transform.rotation = moneyRotation;
+        }
     }
 
-    private static void DisableAllColliders(GameObject rootObject)
+    private void SpawnMoneyView(GameObject moneyPrefab, int index)
     {
-        Collider[] colliders = rootObject.GetComponentsInChildren<Collider>(true);
-        for (int i = 0; i < colliders.Length; i++)
-            colliders[i].enabled = false;
+        Quaternion moneyRotation = Quaternion.Euler(_moneyViewEulerAngles);
+        Vector3 position = GetGridStackWorldPosition(
+            ResolveCollectStackRoot(),
+            index,
+            Mathf.Max(1, _collectColumns),
+            Mathf.Max(1, _collectRows),
+            _collectColumnSpacing,
+            _collectRowSpacing,
+            _collectLayerSpacing,
+            _collectLocalOffset);
+
+        GameObject view = PooledViewBridge.Spawn(moneyPrefab, position, moneyRotation, transform, true);
+        if (view == null)
+            return;
+
+        _moneyViews.Add(view);
+    }
+
+    private Vector3 GetGridStackWorldPosition(
+        Transform root,
+        int index,
+        int columns,
+        int rows,
+        float columnSpacing,
+        float rowSpacing,
+        float layerSpacing,
+        Vector3 localOffset)
+    {
+        BoxCollider collectCollider = ResolveCollectZoneCollider();
+        if (FacilityStackUtility.TryGetAreaGridLayerWorldPosition(
+            collectCollider,
+            index,
+            columns,
+            rows,
+            layerSpacing,
+            localOffset,
+            out Vector3 areaPosition))
+        {
+            return areaPosition;
+        }
+
+        Transform fallbackRoot = root != null ? root : transform;
+        return FacilityStackUtility.GetGridLayerWorldPosition(
+            fallbackRoot,
+            index,
+            columns,
+            rows,
+            columnSpacing,
+            rowSpacing,
+            layerSpacing,
+            localOffset);
+    }
+
+    private InteractionZone ResolveCollectZone()
+    {
+        if (_collectZone != null)
+            return _collectZone;
+
+        return _embeddedCollectZone;
+    }
+
+    private Transform ResolveCollectStackRoot()
+    {
+        if (_collectStackRoot != null)
+            return _collectStackRoot;
+
+        InteractionZone collectZone = ResolveCollectZone();
+        if (collectZone != null)
+            return collectZone.transform;
+
+        return transform;
+    }
+
+    private ResourceData ResolveMoneyResource()
+    {
+        if (_moneyResource != null)
+            return _moneyResource;
+
+        InteractionZone collectZone = ResolveCollectZone();
+        return collectZone != null ? collectZone.Resource : null;
+    }
+
+    private GameObject ResolveMoneyPrefab()
+    {
+        ResourceData money = ResolveMoneyResource();
+        return money != null ? money.WorldViewPrefab : null;
+    }
+
+    private BoxCollider ResolveCollectZoneCollider()
+    {
+        if (_collectZoneCollider != null)
+            return _collectZoneCollider;
+
+        InteractionZone collectZone = ResolveCollectZone();
+        if (collectZone != null)
+            collectZone.TryGetComponent(out _collectZoneCollider);
+
+        return _collectZoneCollider;
     }
 }

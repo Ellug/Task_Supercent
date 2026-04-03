@@ -19,15 +19,21 @@ public class PlayerCarryVisualizer : MonoBehaviour
 
     [SerializeField] private ResourceStack _resourceStack;
     [SerializeField] private List<CarryBinding> _carryBindings = new();
+    [SerializeField] private ResourceData _oreResource;
+    [SerializeField] private ResourceData _moneyResource;
+    [SerializeField, Min(0f)] private float _moneyBackOffsetWhenOreExists = 0.45f;
 
     private readonly Dictionary<ResourceData, CarryBinding> _bindingByResource = new();
     private readonly Dictionary<ResourceData, List<GameObject>> _spawnedViewsByResource = new();
     private readonly List<ResourceStack.Slot> _slotBuffer = new();
     private readonly List<ResourceData> _resourceKeyBuffer = new();
+    private ResourceData _resolvedOreResource;
+    private ResourceData _resolvedMoneyResource;
 
     void Awake()
     {
         RebuildCarryBindings();
+        ResolvePriorityResources();
         ConfigureCarrySlots();
         SyncAllCarryVisuals();
     }
@@ -59,6 +65,53 @@ public class PlayerCarryVisualizer : MonoBehaviour
 
         for (int i = 0; i < _carryBindings.Count; i++)
             RegisterBinding(_carryBindings[i]);
+    }
+
+    private void ResolvePriorityResources()
+    {
+        _resolvedOreResource = _oreResource;
+        _resolvedMoneyResource = _moneyResource;
+
+        if (_resolvedMoneyResource == null)
+        {
+            for (int i = 0; i < _carryBindings.Count; i++)
+            {
+                CarryBinding binding = _carryBindings[i];
+                if (binding.Resource == null || !binding.Resource.IsMoney)
+                    continue;
+
+                _resolvedMoneyResource = binding.Resource;
+                break;
+            }
+        }
+
+        if (_resolvedOreResource != null)
+            return;
+
+        for (int i = 0; i < _carryBindings.Count; i++)
+        {
+            CarryBinding binding = _carryBindings[i];
+            ResourceData resource = binding.Resource;
+            if (resource == null || resource == _resolvedMoneyResource)
+                continue;
+
+            if (string.Equals(resource.Id, "ore", StringComparison.OrdinalIgnoreCase))
+            {
+                _resolvedOreResource = resource;
+                return;
+            }
+        }
+
+        for (int i = 0; i < _carryBindings.Count; i++)
+        {
+            CarryBinding binding = _carryBindings[i];
+            ResourceData resource = binding.Resource;
+            if (resource == null || resource == _resolvedMoneyResource)
+                continue;
+
+            _resolvedOreResource = resource;
+            return;
+        }
     }
 
     // Resource, ViewPrefab, StackRoot 모두 설정된 항목만 등록
@@ -94,6 +147,9 @@ public class PlayerCarryVisualizer : MonoBehaviour
     private void OnCarryChanged(ResourceData resource, int count, int capacity)
     {
         SyncResourceVisuals(resource, count);
+
+        if (_resolvedOreResource != null && _resolvedMoneyResource != null && resource == _resolvedOreResource)
+            SyncResourceVisuals(_resolvedMoneyResource, _resourceStack.GetCount(_resolvedMoneyResource));
     }
 
     // 등록된 모든 자원 뷰를 현재 스택 수량에 맞춰 동기화
@@ -157,6 +213,12 @@ public class PlayerCarryVisualizer : MonoBehaviour
         for (int i = 0; i < views.Count; i++)
         {
             GameObject view = views[i];
+            if (TryGetOverrideWorldPosition(resource, binding, i, out Vector3 overridePosition))
+            {
+                view.transform.position = overridePosition;
+                view.transform.rotation = Quaternion.identity;
+                continue;
+            }
 
             if (_resourceStack.TryGetWorldPosition(resource, i, out Vector3 worldPosition))
             {
@@ -169,5 +231,49 @@ public class PlayerCarryVisualizer : MonoBehaviour
             view.transform.localPosition = binding.LocalOffset + (Vector3.up * (binding.VerticalSpacing * i));
             view.transform.localRotation = Quaternion.identity;
         }
+    }
+
+    private bool TryGetOverrideWorldPosition(ResourceData resource, CarryBinding binding, int index, out Vector3 worldPosition)
+    {
+        worldPosition = default;
+
+        if (_resolvedOreResource == null || _resolvedMoneyResource == null)
+            return false;
+
+        if (resource != _resolvedMoneyResource)
+            return false;
+
+        if (!_bindingByResource.TryGetValue(_resolvedOreResource, out CarryBinding oreBinding))
+            return false;
+
+        Transform root = oreBinding.StackRoot != null ? oreBinding.StackRoot : binding.StackRoot;
+        if (root == null)
+            return false;
+
+        Vector3 axisRight = GetHorizontalAxis(root.right, Vector3.right);
+        Vector3 axisForward = GetHorizontalAxis(root.forward, Vector3.forward);
+        Vector3 axisBack = -axisForward;
+
+        Vector3 basePosition = root.position;
+        basePosition += axisRight * oreBinding.LocalOffset.x;
+        basePosition += axisForward * oreBinding.LocalOffset.z;
+        basePosition += Vector3.up * oreBinding.LocalOffset.y;
+
+        if (_resourceStack.GetCount(_resolvedOreResource) > 0)
+            basePosition += axisBack * Mathf.Max(0f, _moneyBackOffsetWhenOreExists);
+
+        worldPosition = basePosition + (Vector3.up * (binding.VerticalSpacing * index));
+        return true;
+    }
+
+    private static Vector3 GetHorizontalAxis(Vector3 sourceAxis, Vector3 fallback)
+    {
+        Vector3 axis = sourceAxis;
+        axis.y = 0f;
+
+        if (axis.sqrMagnitude < 0.0001f)
+            axis = fallback;
+
+        return axis.normalized;
     }
 }

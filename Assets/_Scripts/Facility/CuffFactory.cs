@@ -28,9 +28,6 @@ public class CuffFactory : FacilityBase
     [SerializeField] private Vector3 _collectLocalOffset = new(0f, 0.1f, 0f);
     [SerializeField, Min(1)] private int _collectColumns = 1;
 
-    [Header("Common")]
-    [SerializeField] private bool _disableSpawnedColliders = true;
-
     private readonly List<GameObject> _oreViews = new();
     private readonly List<GameObject> _cuffViews = new();
     private float _nextProduceTime;
@@ -79,14 +76,14 @@ public class CuffFactory : FacilityBase
     // 현재 버퍼에 적재 가능한 광석 수량 반환
     protected override int GetRemainingCapacity(ResourceData resource)
     {
-        CleanupMissing(_oreViews);
+        FacilityStackUtility.CleanupMissing(_oreViews);
         return Mathf.Max(0, _maxBufferedOre - _oreViews.Count);
     }
 
     // InputZone에서 광석을 받으면 뷰 스폰
     protected override void OnConsumed(ResourceData resource, int amount)
     {
-        CleanupMissing(_oreViews);
+        FacilityStackUtility.CleanupMissing(_oreViews);
 
         GameObject orePrefab = ResolveOrePrefab();
         if (orePrefab == null)
@@ -130,7 +127,7 @@ public class CuffFactory : FacilityBase
         if (_collectZone == null)
             return;
 
-        CleanupMissing(_cuffViews);
+        FacilityStackUtility.CleanupMissing(_cuffViews);
 
         GameObject cuffPrefab = ResolveCuffPrefab();
         if (cuffPrefab == null)
@@ -156,7 +153,7 @@ public class CuffFactory : FacilityBase
             if (view == null)
                 continue;
 
-            view.transform.position = GetStackWorldPosition(
+            view.transform.position = FacilityStackUtility.GetColumnLayerWorldPosition(
                 ResolveCollectStackRoot(),
                 i,
                 Mathf.Max(1, _collectColumns),
@@ -172,7 +169,7 @@ public class CuffFactory : FacilityBase
     // 광석 버퍼 맨 위 뷰 1개 반환
     private void ConsumeOneOreView()
     {
-        CleanupMissing(_oreViews);
+        FacilityStackUtility.CleanupMissing(_oreViews);
         if (_oreViews.Count <= 0)
             return;
 
@@ -184,20 +181,24 @@ public class CuffFactory : FacilityBase
     private void SpawnOreView(GameObject orePrefab, int index)
     {
         Transform root = _oreStackRoot != null ? _oreStackRoot : transform;
-        Vector3 position = GetStackWorldPosition(root, index, 2, _oreColumnSpacing, _oreLayerSpacing, _oreLocalOffset, true);
+        Vector3 position = FacilityStackUtility.GetColumnLayerWorldPosition(
+            root,
+            index,
+            2,
+            _oreColumnSpacing,
+            _oreLayerSpacing,
+            _oreLocalOffset,
+            true);
         GameObject view = PooledViewBridge.Spawn(orePrefab, position, Quaternion.identity, transform, true);
         if (view == null)
             return;
-
-        if (_disableSpawnedColliders)
-            DisableAllColliders(view);
 
         _oreViews.Add(view);
     }
 
     private void SpawnCuffView(GameObject cuffPrefab, int index)
     {
-        Vector3 position = GetStackWorldPosition(
+        Vector3 position = FacilityStackUtility.GetColumnLayerWorldPosition(
             ResolveCollectStackRoot(),
             index,
             Mathf.Max(1, _collectColumns),
@@ -210,96 +211,7 @@ public class CuffFactory : FacilityBase
         if (view == null)
             return;
 
-        if (_disableSpawnedColliders)
-            DisableAllColliders(view);
-
         _cuffViews.Add(view);
-    }
-
-    // index를 columns 기준으로 행/열로 분해해 월드 좌표 계산
-    // useTopY가 true이면 root의 Collider/Renderer 최상단을 기준 Y로 사용
-    private Vector3 GetStackWorldPosition(
-        Transform root,
-        int index,
-        int columns,
-        float columnSpacing,
-        float layerSpacing,
-        Vector3 localOffset,
-        bool useTopY)
-    {
-        if (root == null)
-            root = transform;
-
-        int safeColumns = Mathf.Max(1, columns);
-        int column = index % safeColumns;
-        int layer = index / safeColumns;
-
-        float centeredColumn = column - ((safeColumns - 1) * 0.5f);
-        float xOffset = centeredColumn * Mathf.Max(0f, columnSpacing);
-        float yOffset = layer * Mathf.Max(0f, layerSpacing);
-
-        Vector3 axisX = GetHorizontalAxis(root.right, Vector3.right);
-        Vector3 axisZ = GetHorizontalAxis(root.forward, Vector3.forward);
-        Vector3 basePosition = root.position;
-
-        if (useTopY && TryGetTopY(root, out float topY))
-            basePosition.y = topY;
-
-        basePosition += axisX * localOffset.x;
-        basePosition += axisZ * localOffset.z;
-        basePosition += Vector3.up * localOffset.y;
-
-        return basePosition + (axisX * xOffset) + (Vector3.up * yOffset);
-    }
-
-    // Y축 제거 후 정규화, 수평 벡터가 없으면 fallback 반환
-    private static Vector3 GetHorizontalAxis(Vector3 sourceAxis, Vector3 fallback)
-    {
-        Vector3 axis = sourceAxis;
-        axis.y = 0f;
-
-        if (axis.sqrMagnitude < 0.0001f)
-            axis = fallback;
-
-        return axis.normalized;
-    }
-
-    // root 하위 활성 Collider → Renderer 순으로 최상단 Y 탐색
-    private static bool TryGetTopY(Transform root, out float topY)
-    {
-        topY = root.position.y;
-        bool found = false;
-
-        Collider[] colliders = root.GetComponentsInChildren<Collider>(false);
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            Collider collider = colliders[i];
-            if (collider == null || !collider.enabled)
-                continue;
-
-            if (!found || collider.bounds.max.y > topY)
-                topY = collider.bounds.max.y;
-
-            found = true;
-        }
-
-        if (found)
-            return true;
-
-        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(false);
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            Renderer renderer = renderers[i];
-            if (renderer == null || !renderer.enabled)
-                continue;
-
-            if (!found || renderer.bounds.max.y > topY)
-                topY = renderer.bounds.max.y;
-
-            found = true;
-        }
-
-        return found;
     }
 
     // _collectStackRoot → _collectZone → self 순으로 수집 스택 루트 결정
@@ -350,20 +262,4 @@ public class CuffFactory : FacilityBase
         return resource != null ? resource.WorldViewPrefab : null;
     }
 
-    // null이 된 뷰 항목을 리스트에서 제거
-    private static void CleanupMissing(List<GameObject> views)
-    {
-        for (int i = views.Count - 1; i >= 0; i--)
-        {
-            if (views[i] == null)
-                views.RemoveAt(i);
-        }
-    }
-
-    private static void DisableAllColliders(GameObject rootObject)
-    {
-        Collider[] colliders = rootObject.GetComponentsInChildren<Collider>(true);
-        for (int i = 0; i < colliders.Length; i++)
-            colliders[i].enabled = false;
-    }
 }

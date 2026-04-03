@@ -13,6 +13,7 @@ public class Mine : MonoBehaviour, IPoolable
 
     public Vector2Int GridCell { get; private set; }
     public int CurrentHp => _currentHp;
+    public ResourceData YieldResource => _yieldResource;
 
     public event Action<Mine, ResourceData, int> Depleted;
 

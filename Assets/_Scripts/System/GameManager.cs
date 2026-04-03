@@ -4,6 +4,7 @@ public class GameManager : Singleton<GameManager>
 {
     [SerializeField] private MoneyUI _moneyUI;
     [SerializeField] private ResourceManager _resourceManager;
+    [SerializeField] private InteractionZoneFlowLibrary _interactionZoneFlowLibrary;
 
     void Start()
     {
@@ -11,6 +12,7 @@ public class GameManager : Singleton<GameManager>
             _resourceManager = ResourceManager.Instance;
 
         BindMoneyUI();
+        InteractionZoneFlowBootstrap.Apply(_interactionZoneFlowLibrary);
     }
 
     private void BindMoneyUI()

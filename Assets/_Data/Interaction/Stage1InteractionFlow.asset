@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17af02ca9d74490c8a55a5028a1c5d4d, type: 3}
+  m_Name: Stage1InteractionFlow
+  m_EditorClassIdentifier: 
+  _initialStates:
+  - _zoneId: 1
+    _zoneEnabled: 1
+    _resetProgress: 1
+    _applyLibraryBeforeReset: 1
+  - _zoneId: 2
+    _zoneEnabled: 0
+    _resetProgress: 1
+    _applyLibraryBeforeReset: 1
+  - _zoneId: 3
+    _zoneEnabled: 0
+    _resetProgress: 1
+    _applyLibraryBeforeReset: 1
+  - _zoneId: 4
+    _zoneEnabled: 0
+    _resetProgress: 1
+    _applyLibraryBeforeReset: 1
+  _transitions:
+  - _sourceZoneId: 1
+    _trigger: 0
+    _targetZoneId: 2
+    _operation: 0
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
+  - _sourceZoneId: 2
+    _trigger: 1
+    _targetZoneId: 3
+    _operation: 0
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
+  - _sourceZoneId: 3
+    _trigger: 1
+    _targetZoneId: 4
+    _operation: 0
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
+  _purchaseUpgrades:
+  - _triggerZoneId: 2
+    _targetZoneId: 2
+    _equipId: bulldozer_lv3
+    _requiredAmount: 50
+    _zoneEnabledAfterUpgrade: 1
+    _completeOnce: 1

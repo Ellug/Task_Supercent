@@ -3,6 +3,10 @@ public interface IInteractionActor
 {
     ResourceStack CarryStack { get; }
     bool IsInteractionReady(float stopSpeedThreshold);
-    bool TryAcquireEquip(EquipDefinition equip);
-    bool HasEquipOrBetter(EquipDefinition equip);
+    float SubmitTickInterval { get; }
+    int SubmitAmountPerTick { get; }
+    float CollectTickInterval { get; }
+    int CollectAmountPerTick { get; }
+    bool TryAcquireEquip(EquipData equip);
+    bool HasEquipOrBetter(EquipData equip);
 }

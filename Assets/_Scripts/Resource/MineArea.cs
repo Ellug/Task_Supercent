@@ -56,18 +56,12 @@ public class MineArea : MonoBehaviour
     // BoxCollider 또는 직접 설정한 areaSize 반환
     private Vector2 GetAreaSize()
     {
-        if (_areaCollider != null)
-            return new Vector2(Mathf.Max(0.1f, _areaCollider.size.x), Mathf.Max(0.1f, _areaCollider.size.z));
-
         return new Vector2(Mathf.Max(0.1f, _areaSize.x), Mathf.Max(0.1f, _areaSize.y));
     }
 
     // BoxCollider 또는 직접 설정한 중심 오프셋 반환
     private Vector3 GetLocalCenterOffset()
     {
-        if (_areaCollider != null)
-            return _areaCollider.center;
-
         return _localCenterOffset;
     }
 

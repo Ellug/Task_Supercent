@@ -123,6 +123,7 @@ GameObject:
   - component: {fileID: 3867678400118706670}
   - component: {fileID: 665500000000000001}
   - component: {fileID: 665500000000000002}
+  - component: {fileID: 665500000000000003}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -291,14 +292,11 @@ MonoBehaviour:
   _view: {fileID: 8253618029180940386}
   _equip: {fileID: 665500000000000001}
   _resourceStack: {fileID: 665500000000000002}
-  _oreResource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
-  _oreStackPrefab: {fileID: 3590217679474135049, guid: 7707969143dc4844abf4ef355085e90c,
-    type: 3}
-  _oreStackRoot: {fileID: 910000000000000012}
-  _oreStackCapacity: 30
-  _oreStackSpacing: 0.35
-  _oreStackOffset: {x: 0, y: 0, z: 0}
   _mineForwardDotMin: 0
+  _submitTickInterval: 0.05
+  _submitAmountPerTick: 1
+  _collectTickInterval: 0.05
+  _collectAmountPerTick: 1
 --- !u!114 &665500000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,6 +326,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _slots: []
+--- !u!114 &665500000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5694858553860438943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f8cd90c5db74ef3b6b1e5f6ca7917d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _resourceStack: {fileID: 665500000000000002}
+  _carryBindings:
+  - Resource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
+    ViewPrefab: {fileID: 3590217679474135049, guid: 7707969143dc4844abf4ef355085e90c,
+      type: 3}
+    StackRoot: {fileID: 910000000000000012}
+    Capacity: 30
+    VerticalSpacing: 0.35
+    LocalOffset: {x: 0, y: 0, z: 0}
+  - Resource: {fileID: 11400000, guid: 9d2d67b42a1f4c07a3c4d9b9c4f8e1a2, type: 2}
+    ViewPrefab: {fileID: 3590217679474135049, guid: b1bcc7a5061ac054c9526280708fdb84,
+      type: 3}
+    StackRoot: {fileID: 910000000000000012}
+    Capacity: 99
+    VerticalSpacing: 0.12
+    LocalOffset: {x: 0.45, y: 0, z: 0}
+  - Resource: {fileID: 11400000, guid: f0b6a9f611784ac28ca98f5e6219d2d0, type: 2}
+    ViewPrefab: {fileID: 3590217679474135049, guid: 8200583960294874ca4f9232faf7f08e,
+      type: 3}
+    StackRoot: {fileID: 153659513103456187}
+    Capacity: 60
+    VerticalSpacing: 0.25
+    LocalOffset: {x: 0, y: 0.1, z: 1.1}
 --- !u!1 &910000000000000001
 GameObject:
   m_ObjectHideFlags: 0

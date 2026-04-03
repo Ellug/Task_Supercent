@@ -26,18 +26,15 @@ public class ResourceStack : MonoBehaviour
         Rebuild();
     }
 
-    // 단일 슬롯을 코드로 설정하고 딕셔너리 재구성
-    public void ConfigureSingleSlot(ResourceData resource, Transform anchor, int capacity, float verticalSpacing, Vector3 localOffset)
+    // 여러 슬롯을 코드로 설정하고 딕셔너리 재구성
+    public void ConfigureSlots(IReadOnlyList<Slot> slots)
     {
         _slots.Clear();
-        _slots.Add(new Slot
+        if (slots != null)
         {
-            Resource = resource,
-            Anchor = anchor,
-            LocalOffset = localOffset,
-            Capacity = Mathf.Max(1, capacity),
-            VerticalSpacing = Mathf.Max(0f, verticalSpacing)
-        });
+            for (int i = 0; i < slots.Count; i++)
+                _slots.Add(slots[i]);
+        }
 
         Rebuild();
     }
@@ -59,6 +56,9 @@ public class ResourceStack : MonoBehaviour
 
             if (slot.VerticalSpacing < 0f)
                 slot.VerticalSpacing = 0f;
+
+            if (slot.Anchor == null)
+                slot.Anchor = transform;
 
             _slotByResource[slot.Resource] = slot;
             _countByResource[slot.Resource] = 0;
@@ -130,42 +130,19 @@ public class ResourceStack : MonoBehaviour
         return removed > 0;
     }
 
-    // 이 스택에서 target 스택으로 resource를 이동 — 수용 초과분은 반환
-    public bool TryMoveTo(ResourceStack target, ResourceData resource, int amount, out int moved)
-    {
-        moved = 0;
-
-        if (target == null || resource == null || amount <= 0)
-            return false;
-
-        if (!TryRemove(resource, amount, out int removed))
-            return false;
-
-        target.TryAdd(resource, removed, out int accepted);
-        int rejected = removed - accepted;
-
-        if (rejected > 0)
-            TryAdd(resource, rejected, out _);
-
-        moved = accepted;
-        return moved > 0;
-    }
-
-    // 다음 적재 위치의 월드 좌표 반환 — 슬롯 앵커 + 수직 적층 오프셋 계산
-    public bool TryGetNextWorldPosition(ResourceData resource, out Vector3 worldPosition)
+    // resource의 특정 적층 index(layer)에 해당하는 월드 좌표 반환
+    public bool TryGetWorldPosition(ResourceData resource, int layer, out Vector3 worldPosition)
     {
         worldPosition = default;
 
-        if (resource == null || !_slotByResource.TryGetValue(resource, out Slot slot))
+        if (resource == null || layer < 0)
             return false;
 
-        if (slot.Anchor == null)
+        if (!_slotByResource.TryGetValue(resource, out Slot slot))
             return false;
 
-        int layer = GetCount(resource);
         Vector3 local = slot.LocalOffset + (Vector3.up * (slot.VerticalSpacing * layer));
         worldPosition = slot.Anchor.TransformPoint(local);
         return true;
     }
 }
-

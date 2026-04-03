@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,16 +10,24 @@ public class EquipBase : MonoBehaviour
     [SerializeField] private int _mineDamage = 1;
 
     private int _currentLevel;
-    private EquipDefinition _currentEquip;
+    private EquipData _currentEquip;
     private float _nextMineTime;
 
     private GameObject _currentViewInstance;
     private EquipPresentationBase _presentation;
 
     public int CurrentLevel => _currentLevel;
-    public EquipDefinition CurrentEquip => _currentEquip;
+    public EquipData CurrentEquip => _currentEquip;
 
-    public event Action<int, EquipDefinition> LevelChanged;
+    public event Action<int, EquipData> LevelChanged;
+
+    public EquipData GetDataById(string id)
+    {
+        if (_levelLibrary == null)
+            return null;
+
+        return _levelLibrary.GetById(id);
+    }
 
     void Awake()
     {
@@ -40,12 +48,12 @@ public class EquipBase : MonoBehaviour
         if (_levelLibrary == null)
             return false;
 
-        EquipDefinition equip = _levelLibrary.GetById(id);
+        EquipData equip = _levelLibrary.GetById(id);
         return TryAcquire(equip);
     }
 
     // equip의 레벨을 라이브러리에서 조회해 SetLevel 호출
-    public bool TryAcquire(EquipDefinition equip)
+    public bool TryAcquire(EquipData equip)
     {
         if (_levelLibrary == null || equip == null)
             return false;
@@ -57,7 +65,7 @@ public class EquipBase : MonoBehaviour
     }
 
     // equip이 현재 장비 레벨 이하인지 확인
-    public bool HasEquipOrBetter(EquipDefinition equip)
+    public bool HasEquipOrBetter(EquipData equip)
     {
         if (_levelLibrary == null || equip == null)
             return false;
@@ -75,7 +83,7 @@ public class EquipBase : MonoBehaviour
             return false;
 
         int nextLevel = Mathf.Max(0, level);
-        EquipDefinition nextEquip = _levelLibrary != null ? _levelLibrary.GetEquipForLevel(nextLevel) : null;
+        EquipData nextEquip = _levelLibrary != null ? _levelLibrary.GetEquipForLevel(nextLevel) : null;
 
         if (_currentLevel == nextLevel && _currentEquip == nextEquip)
             return true;

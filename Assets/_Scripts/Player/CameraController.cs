@@ -8,7 +8,6 @@ public class CameraController : MonoBehaviour
 
     void Awake()
     {
-        // PlayerModel 자동 탐색
         if (_playerModel == null)
             _playerModel = FindObjectOfType<PlayerModel>();
     }

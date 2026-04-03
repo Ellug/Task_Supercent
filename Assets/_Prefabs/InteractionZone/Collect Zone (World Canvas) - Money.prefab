@@ -253,13 +253,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 556f103283fc45aab57113cda05a881a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _type: 0
+  _library: {fileID: 11400000, guid: 3ebb5ae65e0a4a6183cae402cfdd3d44, type: 2}
+  _applyLibraryOnAwake: 1
+  _zoneId: 1
+  _type: 2
   _zoneEnabled: 1
   _completeOnce: 1
   _tickInterval: 0.2
   _requirePlayerIdle: 1
   _stopSpeedThreshold: 0.05
-  _resource: {fileID: 0}
+  _resource: {fileID: 11400000, guid: 9d2d67b42a1f4c07a3c4d9b9c4f8e1a2, type: 2}
   _amountPerTick: 1
   _completeAmount: 1
   _storedAmount: 0

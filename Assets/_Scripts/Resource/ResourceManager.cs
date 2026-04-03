@@ -65,9 +65,7 @@ public class ResourceManager : Singleton<ResourceManager>
     public bool TrySpawnMine(Vector2Int cell)
     {
         if (_mineArea == null || _minePrefab == null)
-        {
             return false;
-        }
 
         if (!_mineArea.IsInside(cell))
             return false;
@@ -92,27 +90,6 @@ public class ResourceManager : Singleton<ResourceManager>
 
         _mineByCell[cell] = mine;
         return true;
-    }
-
-    // 셀에 활성화된 광산이 있는지 조회
-    public bool TryGetMine(Vector2Int cell, out Mine mine)
-    {
-        if (!_mineByCell.TryGetValue(cell, out mine))
-            return false;
-
-        return mine != null && mine.gameObject.activeInHierarchy;
-    }
-
-    // 셀의 광산을 채굴 — 성공 시 yieldPrefab과 yieldAmount 반환
-    public bool TryMine(Vector2Int cell, int power, out ResourceData yieldResource, out int yieldAmount)
-    {
-        yieldResource = null;
-        yieldAmount = 0;
-
-        if (!TryGetMine(cell, out Mine mine))
-            return false;
-
-        return mine.TryMine(power, out yieldResource, out yieldAmount);
     }
 
     // origin 전방(foward) range 내 활성 광산 중 가장 가까운 1개 반환
@@ -190,33 +167,11 @@ public class ResourceManager : Singleton<ResourceManager>
         NotifyMoneyChanged();
     }
 
-    void Update()
-    {
-        EnsureRespawnForEmptyCells();
-    }
-
     // MineArea 전체 셀에 광산 일괄 스폰
     private void SpawnAllCellMines()
     {
         foreach (Vector2Int cell in _mineArea.EnumerateAllCells())
             TrySpawnMine(cell);
-    }
-
-    // 광산이 없고 리스폰 대기 중이 아닌 셀에 리스폰 코루틴 시작
-    private void EnsureRespawnForEmptyCells()
-    {
-        if (_mineArea == null)
-            return;
-
-        foreach (Vector2Int cell in _mineArea.EnumerateAllCells())
-        {
-            _mineByCell.TryGetValue(cell, out Mine mine);
-            bool hasMine = mine != null && mine.gameObject.activeInHierarchy;
-            if (hasMine || _respawnByCell.ContainsKey(cell))
-                continue;
-
-            _respawnByCell[cell] = StartCoroutine(CoRespawnMine(cell));
-        }
     }
 
     // 광산 소진 시 ResourceYielded 발생, Money면 소지금 추가, 리스폰 예약

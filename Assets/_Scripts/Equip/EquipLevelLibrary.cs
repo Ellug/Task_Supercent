@@ -5,13 +5,13 @@ using UnityEngine;
 public struct EquipLevelEntry
 {
     [SerializeField] private int _level;
-    [SerializeField] private EquipDefinition _equip;
+    [SerializeField] private EquipData _equip;
 
     public int Level => _level;
-    public EquipDefinition Equip => _equip;
+    public EquipData Equip => _equip;
 }
 
-// 레벨별 EquipDefinition 매핑 ScriptableObject
+// 레벨별 EquipData 매핑 ScriptableObject
 [CreateAssetMenu(menuName = "Game/Equip Level Library", fileName = "EquipLevelLibrary")]
 public class EquipLevelLibrary : ScriptableObject
 {
@@ -19,12 +19,12 @@ public class EquipLevelLibrary : ScriptableObject
 
     public IReadOnlyList<EquipLevelEntry> Entries => _entries;
 
-    // id로 EquipDefinition 검색 — 없으면 null 반환
-    public EquipDefinition GetById(string id)
+    // id로 EquipData 검색 — 없으면 null 반환
+    public EquipData GetById(string id)
     {
         for (int i = 0; i < _entries.Count; i++)
         {
-            EquipDefinition equip = _entries[i].Equip;
+            EquipData equip = _entries[i].Equip;
             if (equip == null || string.IsNullOrEmpty(equip.Id))
                 continue;
 
@@ -36,7 +36,7 @@ public class EquipLevelLibrary : ScriptableObject
     }
 
     // equip이 등록된 레벨을 out으로 반환 — 없으면 false
-    public bool TryGetLevel(EquipDefinition equip, out int level)
+    public bool TryGetLevel(EquipData equip, out int level)
     {
         for (int i = 0; i < _entries.Count; i++)
         {
@@ -51,10 +51,10 @@ public class EquipLevelLibrary : ScriptableObject
         return false;
     }
 
-    // level 이하 엔트리 중 가장 높은 레벨의 EquipDefinition 반환
-    public EquipDefinition GetEquipForLevel(int level)
+    // level 이하 엔트리 중 가장 높은 레벨의 EquipData 반환
+    public EquipData GetEquipForLevel(int level)
     {
-        EquipDefinition best = null;
+        EquipData best = null;
         int bestLevel = int.MinValue;
 
         for (int i = 0; i < _entries.Count; i++)

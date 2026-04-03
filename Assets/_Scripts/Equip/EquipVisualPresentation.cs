@@ -9,7 +9,7 @@ public class EquipVisualPresentation : EquipPresentationBase
     [SerializeField] private ParticleSystem _mineDepletedFx;
 
     // 장비 비주얼 활성화
-    public override void OnEquipped(Transform owner, EquipDefinition equip)
+    public override void OnEquipped(Transform owner, EquipData equip)
     {
         gameObject.SetActive(true);
 

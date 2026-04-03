@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c92f197b9ae4c488a18a79a806b2a5f, type: 3}
+  m_Name: CollectCuffZone
+  m_EditorClassIdentifier: 
+  _type: 2
+  _zoneEnabled: 1
+  _completeOnce: 0
+  _tickInterval: 0.05
+  _requireActorIdle: 1
+  _stopSpeedThreshold: 0.05
+  _resource: {fileID: 11400000, guid: f0b6a9f611784ac28ca98f5e6219d2d0, type: 2}
+  _amountPerTick: 1
+  _completeAmount: 0
+  _initialStoredAmount: 0
+  _purchaseEquip: {fileID: 0}
+  _priceOverride: -1

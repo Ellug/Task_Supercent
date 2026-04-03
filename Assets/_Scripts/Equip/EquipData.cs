@@ -1,8 +1,8 @@
 using UnityEngine;
 
 // 장비 메타데이터 ScriptableObject — 가격·사거리·쿨타임·동시 채굴 수 정의
-[CreateAssetMenu(menuName = "Game/Equip Definition", fileName = "EquipDefinition")]
-public class EquipDefinition : ScriptableObject
+[CreateAssetMenu(menuName = "Game/Equip Data", fileName = "EquipData")]
+public class EquipData : ScriptableObject
 {
     [SerializeField] private string _id;
     [SerializeField] private Sprite _icon;

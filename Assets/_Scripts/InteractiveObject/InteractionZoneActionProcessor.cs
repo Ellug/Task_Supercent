@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public static class InteractionZoneActionProcessor
 {
@@ -10,19 +10,28 @@ public static class InteractionZoneActionProcessor
         ResourceData resource,
         int amountPerTick,
         int purchaseRequiredAmount,
-        EquipDefinition purchaseEquip)
+        EquipData purchaseEquip,
+        out int movedAmount)
     {
+        movedAmount = 0;
+
         if (actor == null || state == null)
             return false;
+
+        ResourceStack carryStack = actor.CarryStack;
 
         switch (type)
         {
             case InteractionZoneType.PurchaseEquip:
-                return ExecutePurchase(actor, state, resource, amountPerTick, purchaseRequiredAmount, purchaseEquip);
+                return ExecutePurchase(actor, carryStack, state, resource, amountPerTick, purchaseRequiredAmount, purchaseEquip, out movedAmount);
             case InteractionZoneType.SubmitResource:
-                return ExecuteSubmit(actor, state, resource, amountPerTick);
+                if (carryStack == null || resource == null)
+                    return false;
+                return ExecuteSubmit(carryStack, state, resource, amountPerTick, out movedAmount);
             case InteractionZoneType.CollectResource:
-                return ExecuteCollect(actor, state, resource, amountPerTick);
+                if (carryStack == null || resource == null)
+                    return false;
+                return ExecuteCollect(carryStack, state, resource, amountPerTick, out movedAmount);
             default:
                 return false;
         }
@@ -31,22 +40,26 @@ public static class InteractionZoneActionProcessor
     // 비용을 틱마다 적립하고, 목표 금액 달성 후 장비 획득
     private static bool ExecutePurchase(
         IInteractionActor actor,
+        ResourceStack carryStack,
         InteractionZoneRuntimeState state,
         ResourceData costResource,
         int amountPerTick,
         int requiredAmount,
-        EquipDefinition purchaseEquip)
+        EquipData purchaseEquip,
+        out int paidAmount)
     {
+        paidAmount = 0;
         int clampedRequired = Mathf.Max(1, requiredAmount);
 
         if (state.StoredAmount < clampedRequired)
         {
             int remaining = clampedRequired - state.StoredAmount;
             int tickAmount = Mathf.Min(Mathf.Max(1, amountPerTick), remaining);
-            if (!TryDepositCost(actor, costResource, tickAmount, out int paidAmount) || paidAmount <= 0)
+            if (!TryDepositCost(carryStack, costResource, tickAmount, out int paidThisTick) || paidThisTick <= 0)
                 return false;
 
-            state.AddStoredAndProcessed(paidAmount);
+            state.AddStoredAndProcessed(paidThisTick);
+            paidAmount += paidThisTick;
         }
 
         if (state.StoredAmount < clampedRequired)
@@ -63,33 +76,32 @@ public static class InteractionZoneActionProcessor
 
     // 액터 캐리 스택에서 amountPerTick만큼 꺼내 state에 적립
     private static bool ExecuteSubmit(
-        IInteractionActor actor,
+        ResourceStack carryStack,
         InteractionZoneRuntimeState state,
         ResourceData resource,
-        int amountPerTick)
+        int amountPerTick,
+        out int movedAmount)
     {
-        ResourceStack carryStack = actor.CarryStack;
-        if (carryStack == null || resource == null)
-            return false;
+        movedAmount = 0;
 
         int amount = Mathf.Max(1, amountPerTick);
         if (!carryStack.TryRemove(resource, amount, out int removed) || removed <= 0)
             return false;
 
         state.AddStoredAndProcessed(removed);
+        movedAmount = removed;
         return true;
     }
 
     // state에서 amountPerTick만큼 꺼내 액터 캐리 스택에 추가
     private static bool ExecuteCollect(
-        IInteractionActor actor,
+        ResourceStack carryStack,
         InteractionZoneRuntimeState state,
         ResourceData resource,
-        int amountPerTick)
+        int amountPerTick,
+        out int movedAmount)
     {
-        ResourceStack carryStack = actor.CarryStack;
-        if (carryStack == null || resource == null)
-            return false;
+        movedAmount = 0;
 
         if (state.StoredAmount <= 0)
             return false;
@@ -100,18 +112,18 @@ public static class InteractionZoneActionProcessor
 
         state.AddStored(-added);
         state.AddProcessed(added);
+        movedAmount = added;
         return true;
     }
 
     // costResource가 있으면 캐리 스택에서, 없으면 소지금에서 비용 차감
-    private static bool TryDepositCost(IInteractionActor actor, ResourceData costResource, int amount, out int paidAmount)
+    private static bool TryDepositCost(ResourceStack carryStack, ResourceData costResource, int amount, out int paidAmount)
     {
         paidAmount = 0;
         int clampedAmount = Mathf.Max(1, amount);
 
-        ResourceStack carryStack = actor.CarryStack;
-        if (costResource != null && carryStack != null)
-            return carryStack.TryRemove(costResource, clampedAmount, out paidAmount);
+        if (costResource != null)
+            return carryStack != null && carryStack.TryRemove(costResource, clampedAmount, out paidAmount);
 
         ResourceManager resourceManager = ResourceManager.Instance;
         if (resourceManager == null)

@@ -8,8 +8,6 @@ public class InteractionZoneLibrary : ScriptableObject
     [SerializeField] private InteractionZoneType _type = InteractionZoneType.PurchaseEquip;
     [SerializeField] private bool _zoneEnabled = true;
     [SerializeField] private bool _completeOnce = true;
-    [SerializeField, Min(0f)] private float _tickInterval = 0.2f;
-    [SerializeField] private bool _requireActorIdle = true;
     [SerializeField, Min(0f)] private float _stopSpeedThreshold = 0.05f;
 
     [Header("Common Resource")]
@@ -25,8 +23,6 @@ public class InteractionZoneLibrary : ScriptableObject
     public InteractionZoneType Type => _type;
     public bool ZoneEnabled => _zoneEnabled;
     public bool CompleteOnce => _completeOnce;
-    public float TickInterval => Mathf.Max(0f, _tickInterval);
-    public bool RequireActorIdle => _requireActorIdle;
     public float StopSpeedThreshold => Mathf.Max(0f, _stopSpeedThreshold);
     public ResourceData Resource => _resource;
     public int AmountPerTick => Mathf.Max(1, _amountPerTick);
@@ -35,4 +31,3 @@ public class InteractionZoneLibrary : ScriptableObject
     public EquipData PurchaseEquip => _purchaseEquip;
     public int PriceOverride => _priceOverride;
 }
-

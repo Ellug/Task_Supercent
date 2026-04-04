@@ -5,6 +5,12 @@ public sealed class MinerWaitState : NpcState<Miner>
 
     public override void Tick(float deltaTime)
     {
-        Npc.MoveToWaitPoint();
+        if (!Npc.IsWorking)
+            return;
+
+        if (!Npc.TryAcquireTargetMine())
+            return;
+
+        Npc.EnterMoveToMine();
     }
 }

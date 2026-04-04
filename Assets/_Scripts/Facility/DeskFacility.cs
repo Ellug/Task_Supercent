@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,14 +6,9 @@ using UnityEngine;
 // Prisoner 지급은 Prisoner별 int 카운트로만 관리
 public class DeskFacility : FacilityBase
 {
-    [Header("Zone Binding")]
-    [SerializeField] private InteractionZone _embeddedInputZone;
-    [SerializeField] private InteractionZone _embeddedCollectZone;
-
     [Header("Cuff Buffer")]
     [SerializeField] private Transform _submitStackRoot;
     [SerializeField] private ResourceData _cuffResource;
-    [SerializeField, Min(1)] private int _maxBufferedCuff = 240;
     [SerializeField, Min(1)] private int _maxCuffPerPrisoner = 4;
     [SerializeField, Min(0f)] private float _submitLayerSpacing = 0.22f;
     [SerializeField] private Vector3 _submitLocalOffset = new(0f, 0.08f, 0f);
@@ -22,7 +18,6 @@ public class DeskFacility : FacilityBase
     [SerializeField] private Transform _collectStackRoot;
     [SerializeField] private ResourceData _moneyResource;
     [SerializeField, Min(1)] private int _rewardMoneyPerPrisoner = 10;
-    [SerializeField, Min(1)] private int _maxCollectStored = 500;
     [SerializeField, Min(1)] private int _collectColumns = 2;
     [SerializeField, Min(1)] private int _collectRows = 3;
     [SerializeField, Min(0f)] private float _collectColumnSpacing = 0.2f;
@@ -40,25 +35,15 @@ public class DeskFacility : FacilityBase
     public int BufferedCuffCount => _cuffViews.Count;
     public int MaxCuffPerPrisoner => Mathf.Max(1, _maxCuffPerPrisoner);
     public int CurCuff => _curCuff;
-    public InteractionZone CollectZone => ResolveCollectZone();
+    public InteractionZone CollectZone => _collectZone;
 
     protected override void Awake()
     {
         base.Awake();
-
-        if (!HasInputZone && _embeddedInputZone != null)
-            BindInputZone(_embeddedInputZone);
-
-        if (_collectZone == null && _embeddedCollectZone != null)
-            _collectZone = _embeddedCollectZone;
-
-        if (_submitStackRoot == null)
-            _submitStackRoot = transform;
-
-        if (_collectStackRoot == null && _collectZone != null)
-            _collectStackRoot = _collectZone.transform;
-
-        _collectZoneCollider = ResolveCollectZoneCollider();
+        ValidateBindingsOrThrow();
+        _collectZoneCollider = _collectZone.GetComponent<BoxCollider>();
+        if (_collectZoneCollider == null)
+            throw new InvalidOperationException("[DeskFacility] _collectZone requires BoxCollider.");
     }
 
     void LateUpdate()
@@ -80,31 +65,23 @@ public class DeskFacility : FacilityBase
         if (!base.CanConsume(resource))
             return false;
 
-        ResourceData cuff = ResolveCuffResource();
-        if (cuff == null || resource != cuff)
+        if (resource != _cuffResource)
             return false;
 
-        return ResolveCuffPrefab() != null;
+        return _cuffResource.WorldViewPrefab != null;
     }
 
     protected override int GetRemainingCapacity(ResourceData resource)
     {
-        return Mathf.Max(0, _maxBufferedCuff - _cuffViews.Count);
+        return int.MaxValue;
     }
 
     protected override void OnConsumed(ResourceData resource, int amount)
     {
-        GameObject cuffPrefab = ResolveCuffPrefab();
-        if (cuffPrefab == null)
-            return;
+        GameObject cuffPrefab = _cuffResource.WorldViewPrefab;
 
         for (int i = 0; i < amount; i++)
-        {
-            if (_cuffViews.Count >= _maxBufferedCuff)
-                break;
-
             SpawnCuffView(cuffPrefab, _cuffViews.Count);
-        }
     }
 
     // 지정 Prisoner에게 Desk 버퍼 Cuff를 지급
@@ -178,16 +155,8 @@ public class DeskFacility : FacilityBase
 
     public bool TryAddMoneyRewardForPrisonerPass()
     {
-        InteractionZone collectZone = ResolveCollectZone();
-        if (collectZone == null)
-            return false;
-
-        int remaining = Mathf.Max(0, Mathf.Max(1, _maxCollectStored) - collectZone.StoredAmount);
-        if (remaining <= 0)
-            return false;
-
-        int rewardAmount = Mathf.Min(Mathf.Max(1, _rewardMoneyPerPrisoner), remaining);
-        collectZone.AddStoredAmount(rewardAmount);
+        int rewardAmount = Mathf.Max(1, _rewardMoneyPerPrisoner);
+        _collectZone.AddStoredAmount(rewardAmount);
         SyncMoneyVisuals();
         return true;
     }
@@ -202,9 +171,8 @@ public class DeskFacility : FacilityBase
     // 1열 기준 y축 적층
     private Vector3 GetStackWorldPosition(int index)
     {
-        Transform root = _submitStackRoot != null ? _submitStackRoot : transform;
         return FacilityStackUtility.GetColumnLayerWorldPosition(
-            root,
+            _submitStackRoot,
             index,
             1,
             0f,
@@ -213,33 +181,18 @@ public class DeskFacility : FacilityBase
             false);
     }
 
-    private ResourceData ResolveCuffResource()
-    {
-        if (_cuffResource != null)
-            return _cuffResource;
-
-        return InputZone != null ? InputZone.Resource : null;
-    }
-
-    private GameObject ResolveCuffPrefab()
-    {
-        ResourceData cuff = ResolveCuffResource();
-        return cuff != null ? cuff.WorldViewPrefab : null;
-    }
-
     private void SyncMoneyVisuals()
     {
         FacilityStackUtility.CleanupMissing(_moneyViews);
 
-        InteractionZone collectZone = ResolveCollectZone();
-        GameObject moneyPrefab = ResolveMoneyPrefab();
-        if (collectZone == null || moneyPrefab == null)
+        GameObject moneyPrefab = _moneyResource.WorldViewPrefab;
+        if (moneyPrefab == null)
         {
             PooledViewBridge.ReleaseAll(_moneyViews);
             return;
         }
 
-        int targetCount = Mathf.Clamp(collectZone.StoredAmount, 0, Mathf.Max(1, _maxCollectStored));
+        int targetCount = Mathf.Max(0, _collectZone.StoredAmount);
         while (_moneyViews.Count > targetCount)
         {
             int lastIndex = _moneyViews.Count - 1;
@@ -250,7 +203,6 @@ public class DeskFacility : FacilityBase
         while (_moneyViews.Count < targetCount)
             SpawnMoneyView(moneyPrefab, _moneyViews.Count);
 
-        Transform stackRoot = ResolveCollectStackRoot();
         int columns = Mathf.Max(1, _collectColumns);
         int rows = Mathf.Max(1, _collectRows);
         Quaternion moneyRotation = Quaternion.Euler(_moneyViewEulerAngles);
@@ -262,7 +214,7 @@ public class DeskFacility : FacilityBase
                 continue;
 
             view.transform.position = GetGridStackWorldPosition(
-                stackRoot,
+                _collectStackRoot,
                 i,
                 columns,
                 rows,
@@ -278,7 +230,7 @@ public class DeskFacility : FacilityBase
     {
         Quaternion moneyRotation = Quaternion.Euler(_moneyViewEulerAngles);
         Vector3 position = GetGridStackWorldPosition(
-            ResolveCollectStackRoot(),
+            _collectStackRoot,
             index,
             Mathf.Max(1, _collectColumns),
             Mathf.Max(1, _collectRows),
@@ -304,9 +256,8 @@ public class DeskFacility : FacilityBase
         float layerSpacing,
         Vector3 localOffset)
     {
-        BoxCollider collectCollider = ResolveCollectZoneCollider();
         if (FacilityStackUtility.TryGetAreaGridLayerWorldPosition(
-            collectCollider,
+            _collectZoneCollider,
             index,
             columns,
             rows,
@@ -317,9 +268,8 @@ public class DeskFacility : FacilityBase
             return areaPosition;
         }
 
-        Transform fallbackRoot = root != null ? root : transform;
         return FacilityStackUtility.GetGridLayerWorldPosition(
-            fallbackRoot,
+            root,
             index,
             columns,
             rows,
@@ -329,50 +279,30 @@ public class DeskFacility : FacilityBase
             localOffset);
     }
 
-    private InteractionZone ResolveCollectZone()
+    private void ValidateBindingsOrThrow()
     {
-        if (_collectZone != null)
-            return _collectZone;
+        if (InputZone == null)
+            throw new InvalidOperationException("[DeskFacility] _inputZone is required.");
 
-        return _embeddedCollectZone;
-    }
+        if (_collectZone == null)
+            throw new InvalidOperationException("[DeskFacility] _collectZone is required.");
 
-    private Transform ResolveCollectStackRoot()
-    {
-        if (_collectStackRoot != null)
-            return _collectStackRoot;
+        if (_submitStackRoot == null)
+            throw new InvalidOperationException("[DeskFacility] _submitStackRoot is required.");
 
-        InteractionZone collectZone = ResolveCollectZone();
-        if (collectZone != null)
-            return collectZone.transform;
+        if (_collectStackRoot == null)
+            throw new InvalidOperationException("[DeskFacility] _collectStackRoot is required.");
 
-        return transform;
-    }
+        if (_cuffResource == null)
+            throw new InvalidOperationException("[DeskFacility] _cuffResource is required.");
 
-    private ResourceData ResolveMoneyResource()
-    {
-        if (_moneyResource != null)
-            return _moneyResource;
+        if (_moneyResource == null)
+            throw new InvalidOperationException("[DeskFacility] _moneyResource is required.");
 
-        InteractionZone collectZone = ResolveCollectZone();
-        return collectZone != null ? collectZone.Resource : null;
-    }
+        if (_cuffResource.WorldViewPrefab == null)
+            throw new InvalidOperationException("[DeskFacility] _cuffResource.WorldViewPrefab is required.");
 
-    private GameObject ResolveMoneyPrefab()
-    {
-        ResourceData money = ResolveMoneyResource();
-        return money != null ? money.WorldViewPrefab : null;
-    }
-
-    private BoxCollider ResolveCollectZoneCollider()
-    {
-        if (_collectZoneCollider != null)
-            return _collectZoneCollider;
-
-        InteractionZone collectZone = ResolveCollectZone();
-        if (collectZone != null)
-            collectZone.TryGetComponent(out _collectZoneCollider);
-
-        return _collectZoneCollider;
+        if (_moneyResource.WorldViewPrefab == null)
+            throw new InvalidOperationException("[DeskFacility] _moneyResource.WorldViewPrefab is required.");
     }
 }

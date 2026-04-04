@@ -5,6 +5,12 @@ public sealed class WorkerWaitState : NpcState<Worker>
 
     public override void Tick(float deltaTime)
     {
+        if (Npc.IsWorking)
+        {
+            Npc.EnterMoveToCollect();
+            return;
+        }
+
         Npc.MoveToWaitPoint();
     }
 }

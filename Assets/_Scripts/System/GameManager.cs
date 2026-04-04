@@ -2,24 +2,11 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
-    [SerializeField] private MoneyUI _moneyUI;
-    [SerializeField] private ResourceManager _resourceManager;
     [SerializeField] private InteractionZoneFlowLibrary _interactionZoneFlowLibrary;
+    [SerializeField] private StageProgressManager _stageProgressManager;
 
     void Start()
     {
-        if (_resourceManager == null)
-            _resourceManager = ResourceManager.Instance;
-
-        BindMoneyUI();
-        InteractionZoneFlowBootstrap.Apply(_interactionZoneFlowLibrary);
+        _stageProgressManager.Initialize(_interactionZoneFlowLibrary);
     }
-
-    private void BindMoneyUI()
-    {
-        if (_moneyUI == null || _resourceManager == null) return;
-
-        _moneyUI.Bind(_resourceManager);
-    }
-
 }

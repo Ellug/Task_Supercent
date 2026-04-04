@@ -1,28 +1,39 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-// 수집 지점 → 제출 지점을 반복 순환하며 쇠고랑을 운반하는 NPC
-// 수집·제출 실행은 이벤트로 외부(NpcManager 등)에 위임
+// Cuff Collect → Desk Submit을 왕복하며 자원을 운반하는 NPC
 public class Worker : NPC
 {
     [Header("Points")]
     [SerializeField] private Transform _waitPoint;
-    [SerializeField] private Transform _collectPoint;
-    [SerializeField] private Transform _submitPoint;
+
+    [Header("Zone")]
+    [SerializeField] private InteractionZone _collectZone;
+    [SerializeField] private InteractionZone _submitZone;
 
     [Header("Carry")]
-    [SerializeField, Min(1)] private int _targetCarryAmount = 3;
+    [SerializeField, Min(1)] private int _targetCarryAmount = 10;
+    [SerializeField] private Transform _carryRoot;
+    [SerializeField] private Vector3 _carryLocalOffset = new(0f, 0.6f, 0.9f);
+    [SerializeField, Min(0f)] private float _carryLayerSpacing = 0.18f;
+
+    [Header("Transfer")]
+    [SerializeField, Min(0.01f)] private float _collectInterval = 0.05f;
+    [SerializeField, Min(1)] private int _collectAmountPerTick = 1;
+    [SerializeField, Min(0.01f)] private float _submitInterval = 0.05f;
+    [SerializeField, Min(1)] private int _submitAmountPerTick = 1;
 
     public int CarriedAmount { get; private set; }
-
-    public event Action<Worker, int> CollectRequested;
-    public event Action<Worker, int> SubmitRequested;
 
     private WorkerWaitState _waitState;
     private WorkerMoveToCollectState _moveToCollectState;
     private WorkerCollectState _collectState;
     private WorkerMoveToSubmitState _moveToSubmitState;
     private WorkerSubmitState _submitState;
+    private readonly List<GameObject> _carryViews = new();
+    private float _nextCollectTime;
+    private float _nextSubmitTime;
+    private bool _isWorking;
 
     protected override void BuildStates()
     {
@@ -35,7 +46,18 @@ public class Worker : NPC
 
     protected override void EnterInitialState()
     {
-        ChangeState(_waitState);
+        if (_isWorking)
+            ChangeState(_moveToCollectState);
+        else
+            ChangeState(_waitState);
+    }
+
+    public void Initialize(InteractionZone collectZone, InteractionZone submitZone)
+    {
+        _collectZone = collectZone;
+        _submitZone = submitZone;
+        _isWorking = true;
+        ChangeState(_moveToCollectState);
     }
 
     public void SetWaitPoint(Transform point)
@@ -43,57 +65,91 @@ public class Worker : NPC
         _waitPoint = point;
     }
 
-    public void SetCollectPoint(Transform point)
+    public void SetCollectZone(InteractionZone zone)
     {
-        _collectPoint = point;
+        _collectZone = zone;
     }
 
-    public void SetSubmitPoint(Transform point)
+    public void SetSubmitZone(InteractionZone zone)
     {
-        _submitPoint = point;
+        _submitZone = zone;
     }
 
     public void StartWork()
     {
+        _isWorking = true;
         ChangeState(_moveToCollectState);
     }
 
     public void StopWork()
     {
+        _isWorking = false;
         ChangeState(_waitState);
     }
 
-    // 외부에서 수집 완료를 통보 — 목표량 달성 시 제출 이동으로 전환
-    public void OnCollected(int amount)
+    void LateUpdate()
     {
-        CarriedAmount = Mathf.Clamp(CarriedAmount + Mathf.Max(0, amount), 0, _targetCarryAmount);
-        if (CarriedAmount >= _targetCarryAmount)
-            ChangeState(_moveToSubmitState);
+        RefreshCarryViewTransforms();
     }
 
-    // 외부에서 제출 완료를 통보 — 소진 시 수집 이동으로 전환
-    public void OnSubmitted(int amount)
+    void OnDestroy()
     {
-        CarriedAmount = Mathf.Max(0, CarriedAmount - Mathf.Max(0, amount));
-        if (CarriedAmount <= 0)
-            ChangeState(_moveToCollectState);
+        PooledViewBridge.ReleaseAll(_carryViews);
     }
 
-    // 아래 internal 멤버는 외부 상태 클래스(WorkerXxxState)에서만 사용
+    internal bool IsWorking => _isWorking;
+    internal bool IsCarryFull => CarriedAmount >= TargetCarryAmount;
+    internal bool IsCarryEmpty => CarriedAmount <= 0;
+
     internal bool MoveToWaitPoint() => MoveToPoint(WaitPosition);
     internal bool MoveToCollectPoint() => MoveToPoint(CollectPosition);
     internal bool MoveToSubmitPoint() => MoveToPoint(SubmitPosition);
 
-    internal int GetCollectNeedAmount() => Mathf.Max(0, TargetCarryAmount - CarriedAmount);
-
-    internal void RequestCollect(int amount)
+    internal bool TryCollectTick()
     {
-        CollectRequested?.Invoke(this, Mathf.Max(0, amount));
+        if (_collectZone == null || _collectZone.Resource == null)
+            return false;
+
+        if (Time.time < _nextCollectTime)
+            return false;
+
+        if (CarriedAmount >= TargetCarryAmount)
+            return false;
+
+        int available = _collectZone.StoredAmount;
+        if (available <= 0)
+            return false;
+
+        int remaining = TargetCarryAmount - CarriedAmount;
+        int amount = Mathf.Min(available, remaining, Mathf.Max(1, _collectAmountPerTick));
+        if (amount <= 0)
+            return false;
+
+        _nextCollectTime = Time.time + Mathf.Max(0.01f, _collectInterval);
+        _collectZone.AddStoredAmount(-amount);
+        AddCarry(amount);
+        return true;
     }
 
-    internal void RequestSubmit()
+    internal bool TrySubmitTick()
     {
-        SubmitRequested?.Invoke(this, CarriedAmount);
+        if (_submitZone == null || _submitZone.Resource == null)
+            return false;
+
+        if (Time.time < _nextSubmitTime)
+            return false;
+
+        if (CarriedAmount <= 0)
+            return false;
+
+        int amount = Mathf.Min(CarriedAmount, Mathf.Max(1, _submitAmountPerTick));
+        if (amount <= 0)
+            return false;
+
+        _nextSubmitTime = Time.time + Mathf.Max(0.01f, _submitInterval);
+        _submitZone.AddStoredAmount(amount);
+        RemoveCarry(amount);
+        return true;
     }
 
     internal void EnterWait() => ChangeState(_waitState);
@@ -102,8 +158,80 @@ public class Worker : NPC
     internal void EnterMoveToSubmit() => ChangeState(_moveToSubmitState);
     internal void EnterSubmit() => ChangeState(_submitState);
 
+    private void AddCarry(int amount)
+    {
+        int addAmount = Mathf.Max(0, amount);
+        if (addAmount <= 0)
+            return;
+
+        CarriedAmount = Mathf.Min(TargetCarryAmount, CarriedAmount + addAmount);
+
+        GameObject carryPrefab = ResolveCarryPrefab();
+        if (carryPrefab == null)
+            return;
+
+        while (_carryViews.Count < CarriedAmount)
+        {
+            GameObject view = PooledViewBridge.Spawn(carryPrefab, transform.position, Quaternion.identity, ResolveCarryRoot(), true);
+            if (view == null)
+                break;
+
+            _carryViews.Add(view);
+        }
+
+        RefreshCarryViewTransforms();
+    }
+
+    private void RemoveCarry(int amount)
+    {
+        int removeAmount = Mathf.Max(0, amount);
+        if (removeAmount <= 0)
+            return;
+
+        CarriedAmount = Mathf.Max(0, CarriedAmount - removeAmount);
+
+        while (_carryViews.Count > CarriedAmount)
+        {
+            int lastIndex = _carryViews.Count - 1;
+            PooledViewBridge.Release(_carryViews[lastIndex]);
+            _carryViews.RemoveAt(lastIndex);
+        }
+
+        RefreshCarryViewTransforms();
+    }
+
+    private void RefreshCarryViewTransforms()
+    {
+        Transform root = ResolveCarryRoot();
+        for (int i = 0; i < _carryViews.Count; i++)
+        {
+            GameObject view = _carryViews[i];
+            if (view == null)
+                continue;
+
+            Vector3 localPosition = _carryLocalOffset + (Vector3.up * (_carryLayerSpacing * i));
+            view.transform.SetParent(root, false);
+            view.transform.localPosition = localPosition;
+            view.transform.localRotation = Quaternion.identity;
+        }
+    }
+
+    private Transform ResolveCarryRoot()
+    {
+        if (_carryRoot != null)
+            return _carryRoot;
+
+        return transform;
+    }
+
+    private GameObject ResolveCarryPrefab()
+    {
+        ResourceData resource = _collectZone != null ? _collectZone.Resource : null;
+        return resource != null ? resource.WorldViewPrefab : null;
+    }
+
     private int TargetCarryAmount => Mathf.Max(1, _targetCarryAmount);
     private Vector3 WaitPosition => _waitPoint != null ? _waitPoint.position : transform.position;
-    private Vector3 CollectPosition => _collectPoint != null ? _collectPoint.position : transform.position;
-    private Vector3 SubmitPosition => _submitPoint != null ? _submitPoint.position : transform.position;
+    private Vector3 CollectPosition => _collectZone != null ? _collectZone.transform.position : transform.position;
+    private Vector3 SubmitPosition => _submitZone != null ? _submitZone.transform.position : transform.position;
 }

@@ -196,6 +196,7 @@ GameObject:
   - component: {fileID: 5852658790059867985}
   - component: {fileID: 1025300470314280885}
   - component: {fileID: 410000000000000001}
+  - component: {fileID: 410000000000000555}
   m_Layer: 0
   m_Name: Buy Zone (World Canvas)
   m_TagString: Untagged
@@ -272,6 +273,22 @@ MonoBehaviour:
   _onCompleted: []
   _amountText: {fileID: 6894709763741951744}
   _iconImage: {fileID: 8944158041478008294}
+--- !u!114 &410000000000000555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276629044145448981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bfd8624123b4677bb4d1782a2e9cfd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _zone: {fileID: 410000000000000001}
+  _amountText: {fileID: 6894709763741951744}
+  _iconImage: {fileID: 8944158041478008294}
+  _buyZoneOnly: 1
 --- !u!1 &3534860208971587151
 GameObject:
   m_ObjectHideFlags: 0

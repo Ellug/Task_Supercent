@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,14 +6,9 @@ using UnityEngine;
 // InputZone에 쌓인 광석을 버퍼에 적재하고, 인터벌마다 1개씩 쇠고랑으로 변환해 CollectZone에 적재
 public class CuffFactory : FacilityBase
 {
-    [Header("Zone Binding")]
-    [SerializeField] private InteractionZone _embeddedInputZone;
-    [SerializeField] private InteractionZone _embeddedCollectZone;
-
     [Header("Ore Buffer")]
     [SerializeField] private Transform _oreStackRoot;
     [SerializeField] private ResourceData _oreResource;
-    [SerializeField, Min(1)] private int _maxBufferedOre = 999;
     [SerializeField, Min(0f)] private float _oreColumnSpacing = 0.75f;
     [SerializeField, Min(0f)] private float _oreLayerSpacing = 0.35f;
     [SerializeField] private Vector3 _oreLocalOffset = new(0f, 0.2f, 0f);
@@ -22,7 +18,6 @@ public class CuffFactory : FacilityBase
     [SerializeField] private ResourceData _cuffResource;
     [SerializeField] private Transform _collectStackRoot;
     [SerializeField, Min(0.01f)] private float _produceInterval = 0.15f;
-    [SerializeField, Min(1)] private int _maxCollectStored = 240;
     [SerializeField, Min(0f)] private float _collectColumnSpacing = 0.45f;
     [SerializeField, Min(0f)] private float _collectLayerSpacing = 0.2f;
     [SerializeField] private Vector3 _collectLocalOffset = new(0f, 0.1f, 0f);
@@ -32,19 +27,12 @@ public class CuffFactory : FacilityBase
     private readonly List<GameObject> _cuffViews = new();
     private float _nextProduceTime;
 
+    public InteractionZone CollectZone => _collectZone;
+
     protected override void Awake()
     {
         base.Awake();
-
-        // Inspector에 InputZone이 없을 때 embedded 존으로 대체
-        if (!HasInputZone && _embeddedInputZone != null)
-            BindInputZone(_embeddedInputZone);
-
-        if (_collectZone == null && _embeddedCollectZone != null)
-            _collectZone = _embeddedCollectZone;
-
-        if (_oreStackRoot == null)
-            _oreStackRoot = transform;
+        ValidateBindingsOrThrow();
     }
 
     void LateUpdate()
@@ -63,39 +51,38 @@ public class CuffFactory : FacilityBase
     // 광석 자원만 소비 가능하며, 뷰 프리팹이 있어야 함
     protected override bool CanConsume(ResourceData resource)
     {
-        if (!base.CanConsume(resource))
-            return false;
-
-        ResourceData targetOre = ResolveOreResource();
-        if (targetOre == null || resource != targetOre)
-            return false;
-
-        return ResolveOrePrefab() != null;
+        return base.CanConsume(resource) && resource == _oreResource;
     }
 
     // 현재 버퍼에 적재 가능한 광석 수량 반환
     protected override int GetRemainingCapacity(ResourceData resource)
     {
         FacilityStackUtility.CleanupMissing(_oreViews);
-        return Mathf.Max(0, _maxBufferedOre - _oreViews.Count);
+        return int.MaxValue;
     }
 
     // InputZone에서 광석을 받으면 뷰 스폰
     protected override void OnConsumed(ResourceData resource, int amount)
     {
         FacilityStackUtility.CleanupMissing(_oreViews);
-
-        GameObject orePrefab = ResolveOrePrefab();
-        if (orePrefab == null)
-            return;
+        GameObject orePrefab = _oreResource.WorldViewPrefab;
 
         for (int i = 0; i < amount; i++)
-        {
-            if (_oreViews.Count >= _maxBufferedOre)
-                break;
-
             SpawnOreView(orePrefab, _oreViews.Count);
-        }
+    }
+
+    // Miner가 채굴 산출 Ore를 직접 SubmitZone으로 적재
+    public int SubmitOreFromRemote(ResourceData resource, int amount)
+    {
+        if (amount <= 0)
+            return 0;
+
+        if (resource != null && resource != _oreResource)
+            return 0;
+
+        int submitAmount = Mathf.Max(1, amount);
+        InputZone.AddStoredAmount(submitAmount);
+        return submitAmount;
     }
 
     // 인터벌마다 광석 1개 소비 → 쇠고랑 1개 생산
@@ -106,14 +93,7 @@ public class CuffFactory : FacilityBase
 
         _nextProduceTime = Time.time + Mathf.Max(0.01f, _produceInterval);
 
-        if (_collectZone == null || ResolveCuffPrefab() == null)
-            return;
-
         if (_oreViews.Count <= 0)
-            return;
-
-        // CollectZone 적재 상한 도달 시 생산 중단
-        if (_collectZone.StoredAmount >= Mathf.Max(1, _maxCollectStored))
             return;
 
         ConsumeOneOreView();
@@ -124,19 +104,10 @@ public class CuffFactory : FacilityBase
     // CollectZone의 StoredAmount에 맞춰 쇠고랑 뷰 개수 및 위치 동기화
     private void SyncCollectVisuals()
     {
-        if (_collectZone == null)
-            return;
-
         FacilityStackUtility.CleanupMissing(_cuffViews);
+        GameObject cuffPrefab = _cuffResource.WorldViewPrefab;
 
-        GameObject cuffPrefab = ResolveCuffPrefab();
-        if (cuffPrefab == null)
-        {
-            PooledViewBridge.ReleaseAll(_cuffViews);
-            return;
-        }
-
-        int targetCount = Mathf.Clamp(_collectZone.StoredAmount, 0, Mathf.Max(1, _maxCollectStored));
+        int targetCount = Mathf.Max(0, _collectZone.StoredAmount);
         while (_cuffViews.Count > targetCount)
         {
             int lastIndex = _cuffViews.Count - 1;
@@ -154,7 +125,7 @@ public class CuffFactory : FacilityBase
                 continue;
 
             view.transform.position = FacilityStackUtility.GetColumnLayerWorldPosition(
-                ResolveCollectStackRoot(),
+                _collectStackRoot,
                 i,
                 Mathf.Max(1, _collectColumns),
                 _collectColumnSpacing,
@@ -180,9 +151,8 @@ public class CuffFactory : FacilityBase
 
     private void SpawnOreView(GameObject orePrefab, int index)
     {
-        Transform root = _oreStackRoot != null ? _oreStackRoot : transform;
         Vector3 position = FacilityStackUtility.GetColumnLayerWorldPosition(
-            root,
+            _oreStackRoot,
             index,
             2,
             _oreColumnSpacing,
@@ -199,7 +169,7 @@ public class CuffFactory : FacilityBase
     private void SpawnCuffView(GameObject cuffPrefab, int index)
     {
         Vector3 position = FacilityStackUtility.GetColumnLayerWorldPosition(
-            ResolveCollectStackRoot(),
+            _collectStackRoot,
             index,
             Mathf.Max(1, _collectColumns),
             _collectColumnSpacing,
@@ -214,52 +184,35 @@ public class CuffFactory : FacilityBase
         _cuffViews.Add(view);
     }
 
-    // _collectStackRoot → _collectZone → self 순으로 수집 스택 루트 결정
-    private Transform ResolveCollectStackRoot()
+    private void ValidateResourceBindingsOrThrow()
     {
-        if (_collectStackRoot != null)
-            return _collectStackRoot;
+        if (_oreStackRoot == null)
+            throw new InvalidOperationException("[CuffFactory] _oreStackRoot is required.");
 
-        if (_collectZone != null)
-            return _collectZone.transform;
+        if (_collectStackRoot == null)
+            throw new InvalidOperationException("[CuffFactory] _collectStackRoot is required.");
 
-        return transform;
+        if (_oreResource == null)
+            throw new InvalidOperationException("[CuffFactory] _oreResource is required.");
+
+        if (_cuffResource == null)
+            throw new InvalidOperationException("[CuffFactory] _cuffResource is required.");
+
+        if (_oreResource.WorldViewPrefab == null)
+            throw new InvalidOperationException("[CuffFactory] _oreResource.WorldViewPrefab is required.");
+
+        if (_cuffResource.WorldViewPrefab == null)
+            throw new InvalidOperationException("[CuffFactory] _cuffResource.WorldViewPrefab is required.");
     }
 
-    // _oreResource → InputZone.Resource 순으로 광석 데이터 결정
-    private ResourceData ResolveOreResource()
+    private void ValidateBindingsOrThrow()
     {
-        if (_oreResource != null)
-            return _oreResource;
+        if (InputZone == null)
+            throw new InvalidOperationException("[CuffFactory] _inputZone is required.");
 
-        if (InputZone != null)
-            return InputZone.Resource;
+        if (_collectZone == null)
+            throw new InvalidOperationException("[CuffFactory] _collectZone is required.");
 
-        return null;
+        ValidateResourceBindingsOrThrow();
     }
-
-    private GameObject ResolveOrePrefab()
-    {
-        ResourceData resource = ResolveOreResource();
-        return resource != null ? resource.WorldViewPrefab : null;
-    }
-
-    // _cuffResource → _collectZone.Resource 순으로 쇠고랑 데이터 결정
-    private ResourceData ResolveCuffResource()
-    {
-        if (_cuffResource != null)
-            return _cuffResource;
-
-        if (_collectZone != null)
-            return _collectZone.Resource;
-
-        return null;
-    }
-
-    private GameObject ResolveCuffPrefab()
-    {
-        ResourceData resource = ResolveCuffResource();
-        return resource != null ? resource.WorldViewPrefab : null;
-    }
-
 }

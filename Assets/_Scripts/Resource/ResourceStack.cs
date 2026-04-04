@@ -83,6 +83,25 @@ public class ResourceStack : MonoBehaviour
         return _slotByResource.TryGetValue(resource, out Slot slot) ? slot.Capacity : 0;
     }
 
+    public bool TryGetFirstResource(System.Predicate<ResourceData> match, out ResourceData resource)
+    {
+        if (match != null)
+        {
+            foreach (var pair in _slotByResource)
+            {
+                ResourceData candidate = pair.Key;
+                if (candidate != null && match(candidate))
+                {
+                    resource = candidate;
+                    return true;
+                }
+            }
+        }
+
+        resource = null;
+        return false;
+    }
+
     // 남은 여유 공간 반환
     public int GetRemaining(ResourceData resource)
     {

@@ -1,0 +1,69 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+[DisallowMultipleComponent]
+[RequireComponent(typeof(InteractionZone))]
+[AddComponentMenu("Game/Interaction/Buy Zone World UI Binder")]
+public class BuyZoneWorldUIBinder : MonoBehaviour
+{
+    [Header("Target")]
+    [SerializeField] private InteractionZone _zone;
+
+    [Header("Inject To UI (Optional)")]
+    [SerializeField] private TMP_Text _amountText;
+    [SerializeField] private Image _iconImage;
+
+    [Header("Rule")]
+    [SerializeField] private bool _buyZoneOnly = true;
+
+    void Awake()
+    {
+        if (_zone == null)
+            _zone = GetComponent<InteractionZone>();
+    }
+
+    void OnEnable()
+    {
+        if (_zone == null)
+            _zone = GetComponent<InteractionZone>();
+
+        if (_zone != null)
+            _zone.StateChanged += OnZoneStateChanged;
+
+        Refresh();
+    }
+
+    void OnDisable()
+    {
+        if (_zone != null)
+            _zone.StateChanged -= OnZoneStateChanged;
+    }
+
+    private void OnZoneStateChanged(InteractionZone zone)
+    {
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        if (_zone == null)
+            return;
+
+        if (_buyZoneOnly && _zone.Type != InteractionZoneType.PurchaseEquip)
+            return;
+
+        if (_amountText != null)
+        {
+            _amountText.text = InteractionZoneUIPresenter.BuildAmountText(
+                _zone.Type,
+                _zone.StoredAmount,
+                _zone.ProcessedAmount,
+                _zone.CompleteAmount,
+                _zone.PurchaseRequiredAmount);
+        }
+
+        if (_iconImage != null)
+            _iconImage.sprite = InteractionZoneUIPresenter.ResolveIconSprite(_zone.Type, _zone.Resource, _zone.PurchaseEquip);
+    }
+}

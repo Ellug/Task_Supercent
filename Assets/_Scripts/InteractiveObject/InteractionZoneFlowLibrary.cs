@@ -23,7 +23,8 @@ public struct InteractionZoneInitialStateData
 public struct InteractionZoneTransitionData
 {
     [SerializeField] private InteractionZoneId _sourceZoneId;
-    [SerializeField] private InteractionZoneFlowTrigger _trigger;   // OnFirstInteraction / OnCompleted
+    [SerializeField] private InteractionZoneFlowTrigger _trigger;   // OnFirstInteraction / OnCompleted / OnFirstResourceAcquired / OnJailBecameFull
+    [SerializeField] private ResourceData _resourceValue;           // OnFirstResourceAcquired 전용
     [SerializeField] private InteractionZoneId _targetZoneId;
     [SerializeField] private InteractionZoneTransitionOperation _operation;
     [SerializeField] private bool _boolValue;
@@ -32,6 +33,7 @@ public struct InteractionZoneTransitionData
 
     public InteractionZoneId SourceZoneId => _sourceZoneId;
     public InteractionZoneFlowTrigger Trigger => _trigger;
+    public ResourceData ResourceValue => _resourceValue;
     public InteractionZoneId TargetZoneId => _targetZoneId;
     public InteractionZoneTransitionOperation Operation => _operation;
     public bool BoolValue => _boolValue;
@@ -58,8 +60,8 @@ public struct InteractionZonePurchaseUpgradeData
     public bool CompleteOnce => _completeOnce;
 }
 
-// 씬 전체 InteractionZone 흐름 데이터를 보관하는 SO
-// InteractionZoneFlowBootstrap.Apply()에 전달해 씬 흐름 초기화에 사용
+// 씬 전체 진행 규칙 데이터를 보관하는 SO
+// StageProgressManager.Initialize()에 전달해 씬 흐름 초기화에 사용
 [CreateAssetMenu(menuName = "Game/Interaction/Flow Library", fileName = "InteractionZoneFlowLibrary")]
 public class InteractionZoneFlowLibrary : ScriptableObject
 {

@@ -29,11 +29,22 @@ MonoBehaviour:
     _zoneEnabled: 0
     _resetProgress: 1
     _applyLibraryBeforeReset: 1
+  - _zoneId: 8
+    _zoneEnabled: 0
+    _resetProgress: 1
+    _applyLibraryBeforeReset: 1
   _transitions:
   - _sourceZoneId: 1
     _trigger: 0
     _targetZoneId: 2
     _operation: 0
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
+  - _sourceZoneId: 1
+    _trigger: 0
+    _targetZoneId: 2
+    _operation: 1
     _boolValue: 1
     _typeValue: 0
     _libraryValue: {fileID: 0}
@@ -44,10 +55,40 @@ MonoBehaviour:
     _boolValue: 1
     _typeValue: 0
     _libraryValue: {fileID: 0}
+  - _sourceZoneId: 2
+    _trigger: 1
+    _targetZoneId: 3
+    _operation: 1
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
   - _sourceZoneId: 3
     _trigger: 1
     _targetZoneId: 4
     _operation: 0
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
+  - _sourceZoneId: 3
+    _trigger: 1
+    _targetZoneId: 4
+    _operation: 1
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
+  - _sourceZoneId: 0
+    _trigger: 3
+    _resourceValue: {fileID: 0}
+    _targetZoneId: 8
+    _operation: 0
+    _boolValue: 1
+    _typeValue: 0
+    _libraryValue: {fileID: 0}
+  - _sourceZoneId: 0
+    _trigger: 3
+    _resourceValue: {fileID: 0}
+    _targetZoneId: 8
+    _operation: 1
     _boolValue: 1
     _typeValue: 0
     _libraryValue: {fileID: 0}

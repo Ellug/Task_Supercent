@@ -12,6 +12,7 @@ public abstract class FacilityBase : MonoBehaviour
     private float _nextConsumeTime;
 
     protected InteractionZone InputZone => _inputZone;
+    public InteractionZone BoundInputZone => _inputZone;
     protected bool HasInputZone => _inputZone != null;
     protected float ConsumeInterval => Mathf.Max(0f, _consumeInterval);
     protected int ConsumeAmountPerTick => Mathf.Max(1, _consumeAmountPerTick);

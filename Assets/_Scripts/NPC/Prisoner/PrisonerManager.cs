@@ -123,6 +123,9 @@ public class PrisonerManager : MonoBehaviour
         if (_deskFacility == null)
             return;
 
+        if (!CanDispatchReceivePrisonerToPrison())
+            return;
+
         if (!_deskFacility.IsPrisonerCuffFilled(_receiveSlot.Prisoner))
             return;
 
@@ -148,6 +151,9 @@ public class PrisonerManager : MonoBehaviour
     private void TrySupplyReceivePrisoner()
     {
         if (_receiveSlot == null || !_receiveSlot.ReadyForSupply || _deskFacility == null)
+            return;
+
+        if (!CanDispatchReceivePrisonerToPrison())
             return;
 
         if (_deskFacility.IsPrisonerCuffFilled(_receiveSlot.Prisoner))
@@ -182,6 +188,7 @@ public class PrisonerManager : MonoBehaviour
     {
         Transform root = _npcRoot != null ? _npcRoot : transform;
         Vector3 position = _spawnPoint != null ? _spawnPoint.position : transform.position;
+        position.y = 1f;
         Quaternion rotation = _spawnPoint != null ? _spawnPoint.rotation : transform.rotation;
 
         Prisoner prisoner = Instantiate(_prisonerPrefab, position, rotation, root);
@@ -330,6 +337,17 @@ public class PrisonerManager : MonoBehaviour
 
         ConfigureAsReceiveSlot(_receiveSlot);
         _queueSlot = SpawnQueueSlot();
+    }
+
+    // 감옥이 닫혔거나, 이미 감옥으로 향하는 인원이 남은 수용량을 모두 점유한 경우
+    // Receive 단계의 공급/출발을 멈춘다.
+    private bool CanDispatchReceivePrisonerToPrison()
+    {
+        if (_jailFacility == null)
+            return true;
+
+        int reservedCount = _movingToEntrance.Count + _entranceQueue.Count + (_movingInside != null ? 1 : 0);
+        return (_jailFacility.CurrentCount + reservedCount) < _jailFacility.MaxCapacity;
     }
 
     private Transform ResolveReceivePoint()

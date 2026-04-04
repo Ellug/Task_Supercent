@@ -17,12 +17,15 @@ public enum InteractionZoneId
     SubmitCuffFactory = 5,
     SubmitDesk = 6,
     CollectCuff = 7,
+    BuyJail = 8,
 }
 
 public enum InteractionZoneFlowTrigger
 {
     OnFirstInteraction = 0,
     OnCompleted = 1,
+    OnFirstResourceAcquired = 2,
+    OnJailBecameFull = 3,
 }
 
 public enum InteractionZoneTransitionOperation

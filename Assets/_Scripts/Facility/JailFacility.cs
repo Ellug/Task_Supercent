@@ -15,10 +15,6 @@ public class JailFacility : MonoBehaviour
     [Header("Capacity")]
     [SerializeField, Min(1)] private int _maxCapacity = 20;
     [SerializeField, Min(0)] private int _currentCount;
-    [SerializeField] private bool _resetOnPlay = true;
-
-    [Header("Debug")]
-    [SerializeField] private bool _logState = true;
 
     private Prisoner _entryOwner;
 
@@ -27,14 +23,13 @@ public class JailFacility : MonoBehaviour
     public int MaxCapacity => Mathf.Max(1, _maxCapacity);
     public int CurrentCount => _currentCount;
     public bool IsOpen => _currentCount < MaxCapacity;
+    public event System.Action<JailFacility> StateChanged;
 
     void Awake()
     {
-        if (_resetOnPlay)
-            _currentCount = 0;
-
-        _currentCount = Mathf.Clamp(_currentCount, 0, MaxCapacity);
+        _currentCount = 0;
         _entryOwner = null;
+        NotifyStateChanged();
         LogState("Init");
     }
 
@@ -76,6 +71,7 @@ public class JailFacility : MonoBehaviour
         if (_entryOwner == prisoner)
             _entryOwner = null;
 
+        NotifyStateChanged();
         LogState("Enter");
         return true;
     }
@@ -91,14 +87,30 @@ public class JailFacility : MonoBehaviour
     {
         _currentCount = Mathf.Clamp(currentCount, 0, MaxCapacity);
         _entryOwner = null;
+        NotifyStateChanged();
         LogState("Reset");
+    }
+
+    public bool SetMaxCapacity(int maxCapacity)
+    {
+        int nextCapacity = Mathf.Max(1, maxCapacity);
+        if (_maxCapacity == nextCapacity)
+            return false;
+
+        _maxCapacity = nextCapacity;
+        _currentCount = Mathf.Clamp(_currentCount, 0, MaxCapacity);
+        NotifyStateChanged();
+        LogState("CapacityChanged");
+        return true;
+    }
+
+    private void NotifyStateChanged()
+    {
+        StateChanged?.Invoke(this);
     }
 
     private void LogState(string reason)
     {
-        if (!_logState)
-            return;
-
         Debug.Log($"[JailFacility] {reason} {_currentCount}/{MaxCapacity} ({(IsOpen ? "OPEN" : "CLOSE")})");
     }
 }

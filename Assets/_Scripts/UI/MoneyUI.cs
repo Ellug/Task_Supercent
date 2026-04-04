@@ -6,61 +6,102 @@ public class MoneyUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text _moneyText;
     [SerializeField] private string _format = "{0}";
+    [SerializeField] private PlayerController _player;
+    [SerializeField] private ResourceData _moneyResource;
 
-    private ResourceManager _boundManager;
+    private ResourceStack _boundStack;
 
     void Awake()
     {
         if (_moneyText == null)
             _moneyText = GetComponentInChildren<TMP_Text>();
 
-        RefreshText(0);
+        BindPlayerIfNeeded();
+        RefreshText(GetCurrentMoneyAmount());
+    }
+
+    void OnEnable()
+    {
+        BindPlayerIfNeeded();
+        RefreshText(GetCurrentMoneyAmount());
+    }
+
+    void OnDisable()
+    {
+        UnbindStack();
     }
 
     void OnDestroy()
     {
-        Unbind();
+        UnbindStack();
     }
 
-    public void Bind(ResourceManager manager)
+    public void Bind(PlayerController player, ResourceData moneyResource = null)
     {
-        if (manager == null)
+        _player = player;
+        if (moneyResource != null)
+            _moneyResource = moneyResource;
+
+        BindPlayerIfNeeded();
+        RefreshText(GetCurrentMoneyAmount());
+    }
+
+    private void BindPlayerIfNeeded()
+    {
+        if (_player == null)
+            _player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Exclude);
+
+        ResourceStack nextStack = _player != null ? _player.CarryStack : null;
+        if (_boundStack == nextStack)
             return;
 
-        if (_boundManager == manager)
+        UnbindStack();
+        _boundStack = nextStack;
+        if (_boundStack != null)
         {
-            RefreshFromManager();
+            _boundStack.Changed += OnCarryStackChanged;
+            if (_moneyResource == null)
+                _boundStack.TryGetFirstResource(IsMoneyResource, out _moneyResource);
+        }
+    }
+
+    private void UnbindStack()
+    {
+        if (_boundStack == null)
+            return;
+
+        _boundStack.Changed -= OnCarryStackChanged;
+        _boundStack = null;
+    }
+
+    private void OnCarryStackChanged(ResourceData resource, int count, int capacity)
+    {
+        if (_moneyResource == null)
+        {
+            if (resource != null && resource.IsMoney)
+            {
+                _moneyResource = resource;
+                RefreshText(count);
+            }
+
             return;
         }
 
-        Unbind();
-
-        _boundManager = manager;
-        _boundManager.MoneyChanged += OnMoneyChanged;
-
-        RefreshFromManager();
+        if (resource == _moneyResource)
+            RefreshText(count);
     }
 
-    public void Unbind()
+    private int GetCurrentMoneyAmount()
     {
-        if (_boundManager == null)
-            return;
+        if (_boundStack == null || _moneyResource == null)
+            return 0;
 
-        _boundManager.MoneyChanged -= OnMoneyChanged;
-        _boundManager = null;
+        return _boundStack.GetCount(_moneyResource);
     }
 
-    private void OnMoneyChanged(int money)
+    private static bool IsMoneyResource(ResourceData resource)
     {
-        RefreshText(money);
-    }
-
-    private void RefreshFromManager()
-    {
-        if (_boundManager == null)
-            return;
-
-        RefreshText(_boundManager.PlayerMoney);
+        return resource != null && resource.IsMoney;
     }
 
     private void RefreshText(int amount)

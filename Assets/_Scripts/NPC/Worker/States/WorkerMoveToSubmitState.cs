@@ -5,6 +5,12 @@ public sealed class WorkerMoveToSubmitState : NpcState<Worker>
 
     public override void Tick(float deltaTime)
     {
+        if (!Npc.IsWorking)
+        {
+            Npc.EnterWait();
+            return;
+        }
+
         if (Npc.MoveToSubmitPoint())
             Npc.EnterSubmit();
     }

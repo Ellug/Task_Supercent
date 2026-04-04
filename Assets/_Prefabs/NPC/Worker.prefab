@@ -95,8 +95,9 @@ GameObject:
   - component: {fileID: 6413068191552781769}
   - component: {fileID: 6355900692264857459}
   - component: {fileID: 620954282339357710}
+  - component: {fileID: 410000000000000001}
   m_Layer: 0
-  m_Name: Guard
+  m_Name: Worker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -146,7 +147,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d915ebbb44069f44b9eee4aac33ba048, type: 2}
+  - {fileID: 2100000, guid: 286e430a37d6be4458c26d3b00613401, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -183,7 +184,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -191,3 +192,30 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &410000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5694858553860438943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8e067d11f6f486fb4debdac8f6b17f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _moveSpeed: 6
+  _arriveDistance: 0.5
+  _rotateToMoveDirection: 1
+  _currentState: 
+  _waitPoint: {fileID: 0}
+  _collectZone: {fileID: 0}
+  _submitZone: {fileID: 0}
+  _targetCarryAmount: 10
+  _carryRoot: {fileID: 0}
+  _carryLocalOffset: {x: 0, y: 0.6, z: 0.9}
+  _carryLayerSpacing: 0.18
+  _collectInterval: 0.05
+  _collectAmountPerTick: 1
+  _submitInterval: 0.05
+  _submitAmountPerTick: 1

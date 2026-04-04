@@ -5,7 +5,21 @@ public sealed class MinerMoveToMineState : NpcState<Miner>
 
     public override void Tick(float deltaTime)
     {
-        if (Npc.MoveToMinePoint())
+        if (!Npc.IsWorking)
+        {
+            Npc.ClearTargetMine();
+            Npc.EnterWait();
+            return;
+        }
+
+        if (!Npc.HasValidTargetMine)
+        {
+            Npc.ClearTargetMine();
+            Npc.EnterWait();
+            return;
+        }
+
+        if (Npc.MoveToTargetMine())
             Npc.EnterMine();
     }
 }

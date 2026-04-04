@@ -1,18 +1,26 @@
-// 제출 지점 도착 시 SubmitRequested 이벤트 발생
-// 보유량이 없으면 수집 이동으로 전환
+// 제출 지점에서 보유분을 모두 제출한 뒤 다시 수집 지점으로 이동
 public sealed class WorkerSubmitState : NpcState<Worker>
 {
     public WorkerSubmitState(Worker npc) : base(npc) { }
     public override string Name => "Submit";
 
-    public override void Enter()
+    public override void Tick(float deltaTime)
     {
-        if (Npc.CarriedAmount <= 0)
+        if (!Npc.IsWorking)
+        {
+            Npc.EnterWait();
+            return;
+        }
+
+        if (Npc.IsCarryEmpty)
         {
             Npc.EnterMoveToCollect();
             return;
         }
 
-        Npc.RequestSubmit();
+        Npc.TrySubmitTick();
+
+        if (Npc.IsCarryEmpty)
+            Npc.EnterMoveToCollect();
     }
 }

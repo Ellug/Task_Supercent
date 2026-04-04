@@ -136,6 +136,23 @@ public class ResourceManager : Singleton<ResourceManager>
         return mine != null;
     }
 
+    // 현재 활성화된 Mine 목록을 results에 채움
+    public void GetActiveMines(List<Mine> results)
+    {
+        if (results == null)
+            return;
+
+        results.Clear();
+
+        foreach (Mine mine in _mineByCell.Values)
+        {
+            if (mine == null || !mine.gameObject.activeInHierarchy)
+                continue;
+
+            results.Add(mine);
+        }
+    }
+
     // 플레이어 소지금 증가 후 MoneyChanged 발생
     public void AddMoney(int amount)
     {
@@ -214,4 +231,3 @@ public class ResourceManager : Singleton<ResourceManager>
         MoneyChanged?.Invoke(_playerMoney);
     }
 }
-

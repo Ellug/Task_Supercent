@@ -1,25 +1,22 @@
-using System;
 using UnityEngine;
 
-// 지정 채굴 지점으로 이동해 인터벌마다 광석을 채굴하는 NPC
-// 채굴 결과는 OreMined 이벤트로 외부(NpcManager 등)에 전달
+// MinerManager가 할당한 Mine을 찾아 이동/채굴하는 NPC
+// 채굴 산출물은 MinerManager를 통해 시설로 원격 제출
 public class Miner : NPC
 {
-    [Header("Points")]
-    [SerializeField] private Transform _waitPoint;
-    [SerializeField] private Transform _minePoint;
-
     [Header("Mining")]
     [SerializeField, Min(0.05f)] private float _mineInterval = 1f;
-    [SerializeField, Min(1)] private int _yieldAmount = 1;
-
-    public event Action<Miner, int> OreMined;
+    [SerializeField, Min(1)] private int _mineDamage = 1;
+    [SerializeField, Min(0f)] private float _mineArriveDistance = 0.8f;
+    [SerializeField, Min(0f)] private float _mineExtraDistance = 0.5f;
 
     private MinerWaitState _waitState;
     private MinerMoveToMineState _moveToMineState;
     private MinerMineState _mineState;
 
-    private bool _isMiningEnabled = true;
+    private MinerManager _manager;
+    private Mine _targetMine;
+    private bool _isWorking;
 
     protected override void BuildStates()
     {
@@ -30,51 +27,94 @@ public class Miner : NPC
 
     protected override void EnterInitialState()
     {
-        if (_isMiningEnabled)
-            ChangeState(_moveToMineState);
-        else
-            ChangeState(_waitState);
-    }
-
-    public void SetWaitPoint(Transform point)
-    {
-        _waitPoint = point;
-    }
-
-    public void SetMinePoint(Transform point)
-    {
-        _minePoint = point;
-    }
-
-    public void StartMining()
-    {
-        _isMiningEnabled = true;
-        ChangeState(_moveToMineState);
-    }
-
-    public void StopMining()
-    {
-        _isMiningEnabled = false;
         ChangeState(_waitState);
     }
 
-    // 아래 internal 멤버는 외부 상태 클래스(MinerXxxState)에서만 사용
-    internal bool IsMiningEnabled => _isMiningEnabled;
-    internal float MineInterval => Mathf.Max(0.05f, _mineInterval);
-    internal int YieldAmount => Mathf.Max(1, _yieldAmount);
-
-    internal bool MoveToWaitPoint() => MoveToPoint(WaitPosition);
-    internal bool MoveToMinePoint() => MoveToPoint(MinePosition);
-
-    internal void RaiseOreMined()
+    public void Initialize(MinerManager manager)
     {
-        OreMined?.Invoke(this, YieldAmount);
+        _manager = manager;
+        _isWorking = true;
+        ChangeState(_waitState);
+    }
+
+    public void StartWork()
+    {
+        _isWorking = true;
+        ChangeState(_waitState);
+    }
+
+    public void StopWork()
+    {
+        _isWorking = false;
+        ClearTargetMine();
+        ChangeState(_waitState);
+    }
+
+    void OnDestroy()
+    {
+        _manager?.UnregisterMiner(this);
+    }
+
+    internal bool IsWorking => _isWorking;
+    internal float MineInterval => Mathf.Max(0.05f, _mineInterval);
+    internal int MineDamage => Mathf.Max(1, _mineDamage);
+    internal bool HasValidTargetMine => _targetMine != null && _targetMine.gameObject.activeInHierarchy;
+
+    internal bool TryAcquireTargetMine()
+    {
+        if (_manager == null)
+            return false;
+
+        if (!_manager.TryAssignMine(this, transform.position, out Mine mine) || mine == null)
+            return false;
+
+        _targetMine = mine;
+        return true;
+    }
+
+    internal void ClearTargetMine()
+    {
+        _manager?.ReleaseMine(this);
+        _targetMine = null;
+    }
+
+    internal bool MoveToTargetMine()
+    {
+        if (!HasValidTargetMine)
+            return false;
+
+        float stopDistance = MineStopDistance;
+        return MoveToPoint(_targetMine.transform.position, stopDistance);
+    }
+
+    internal bool IsAtTargetMine()
+    {
+        if (!HasValidTargetMine)
+            return false;
+
+        Vector3 toTarget = _targetMine.transform.position - transform.position;
+        toTarget.y = 0f;
+        return toTarget.magnitude <= MineStopDistance;
+    }
+
+    internal void MineTarget()
+    {
+        if (!HasValidTargetMine)
+        {
+            ClearTargetMine();
+            return;
+        }
+
+        if (!_targetMine.TryMine(MineDamage, out ResourceData yieldResource, out int yieldAmount))
+            return;
+
+        _manager?.OnMinerDepletedMine(this, _targetMine, yieldResource, yieldAmount);
+        _targetMine = null;
     }
 
     internal void EnterWait() => ChangeState(_waitState);
     internal void EnterMoveToMine() => ChangeState(_moveToMineState);
     internal void EnterMine() => ChangeState(_mineState);
 
-    private Vector3 WaitPosition => _waitPoint != null ? _waitPoint.position : transform.position;
-    private Vector3 MinePosition => _minePoint != null ? _minePoint.position : transform.position;
+    private float MineStopDistance => Mathf.Max(ArriveDistance, _mineArriveDistance) + Mathf.Max(0f, _mineExtraDistance);
 }

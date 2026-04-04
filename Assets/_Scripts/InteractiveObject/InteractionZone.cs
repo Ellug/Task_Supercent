@@ -1,8 +1,6 @@
-using TMPro;
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.UI;
-using System;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Collider))]
@@ -23,8 +21,6 @@ public class InteractionZone : MonoBehaviour
     [SerializeField] private InteractionZoneType _type = InteractionZoneType.PurchaseEquip;
     [SerializeField] private bool _zoneEnabled = true;
     [SerializeField] private bool _completeOnce = true;
-    [SerializeField, Min(0f)] private float _tickInterval = 0.2f;
-    [SerializeField] private bool _requirePlayerIdle = true;
     [SerializeField, Min(0f)] private float _stopSpeedThreshold = 0.05f;
 
     [Header("Common Resource")]
@@ -36,10 +32,6 @@ public class InteractionZone : MonoBehaviour
     [Header("Purchase")]
     [SerializeField] private EquipData _purchaseEquip;
     [SerializeField] private int _priceOverride = -1;
-
-    [Header("World UI")]
-    [SerializeField] private TMP_Text _amountText;
-    [SerializeField] private Image _iconImage;
 
     [Header("Runtime")]
     [SerializeField] private InteractionZoneRuntimeState _runtime = new();
@@ -53,11 +45,16 @@ public class InteractionZone : MonoBehaviour
     public bool IsZoneEnabled => _zoneEnabled;
     public bool IsCompleted => _runtime.Completed;
     public int StoredAmount => _runtime.StoredAmount;
+    public int ProcessedAmount => _runtime.ProcessedAmount;
     public ResourceData Resource => _resource;
+    public EquipData PurchaseEquip => _purchaseEquip;
     public int AmountPerTick => _amountPerTick;
+    public int CompleteAmount => _completeAmount;
+    public int PurchaseRequiredAmount => GetPurchaseRequiredAmount();
 
     public event Action<InteractionZone> Started;
     public event Action<InteractionZone> Completed;
+    public event Action<InteractionZone> StateChanged;
     public event Action<IInteractionActor, ResourceData, int> ResourceSubmitted;
     public event Action<IInteractionActor, ResourceData, int> ResourceCollected;
 
@@ -71,7 +68,7 @@ public class InteractionZone : MonoBehaviour
             ApplyLibrary(_library, true);
 
         EnsureRuntimeState();
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
     // 틱 간격마다 액터 상태 체크 후 인터랙션 처리
@@ -86,8 +83,7 @@ public class InteractionZone : MonoBehaviour
         if (_completeOnce && _runtime.Completed)
             return;
 
-        bool requireIdle = _type == InteractionZoneType.PurchaseEquip && _requirePlayerIdle;
-        if (requireIdle && !_actorInZone.IsInteractionReady(_stopSpeedThreshold))
+        if (_type == InteractionZoneType.PurchaseEquip && !_actorInZone.IsInteractionReady(_stopSpeedThreshold))
             return;
 
         if (Time.time < _nextTickTime)
@@ -123,7 +119,7 @@ public class InteractionZone : MonoBehaviour
         if (!_zoneEnabled)
             _actorInZone = null;
 
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
     // 타입 변경 후 진행 상태 초기화
@@ -132,7 +128,7 @@ public class InteractionZone : MonoBehaviour
         _type = type;
         _runtime.ResetProgress(_storedAmount);
         _nextTickTime = 0f;
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
     // 완료 상태 설정 — completeOnce이면 존도 비활성화
@@ -142,7 +138,7 @@ public class InteractionZone : MonoBehaviour
         if (_completeOnce && _runtime.Completed)
             _zoneEnabled = false;
 
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
     // 보관 수량 증감
@@ -150,7 +146,7 @@ public class InteractionZone : MonoBehaviour
     {
         _runtime.AddStored(amount);
         SyncStoredAmountField();
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
     // 진행 상태 초기화
@@ -160,7 +156,7 @@ public class InteractionZone : MonoBehaviour
         _runtime.ResetProgress(_storedAmount);
         _nextTickTime = 0f;
         _actorInZone = null;
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
     // library 값을 이 존에 덮어쓰고, resetProgress이면 런타임 상태 초기화
@@ -173,8 +169,6 @@ public class InteractionZone : MonoBehaviour
         _type = library.Type;
         _zoneEnabled = library.ZoneEnabled;
         _completeOnce = library.CompleteOnce;
-        _tickInterval = library.TickInterval;
-        _requirePlayerIdle = library.RequireActorIdle;
         _stopSpeedThreshold = library.StopSpeedThreshold;
         _resource = library.Resource;
         _amountPerTick = library.AmountPerTick;
@@ -189,7 +183,7 @@ public class InteractionZone : MonoBehaviour
             _runtime.ResetProgress(_storedAmount);
         }
 
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
     // 구매 존 상태를 코드에서 직접 재설정
@@ -214,8 +208,8 @@ public class InteractionZone : MonoBehaviour
 
         if (resetProgress)
             ResetProgress();
-
-        UpdateWorldUI();
+        else
+            NotifyStateChanged();
     }
 
     // 타입에 맞는 인터랙션 실행 — 최초 성공 시 Started 이벤트, 완료 조건 충족 시 CompleteZone
@@ -260,25 +254,16 @@ public class InteractionZone : MonoBehaviour
 
         if (ShouldComplete(actor))
             CompleteZone();
-
-        UpdateWorldUI();
+        else
+            NotifyStateChanged();
     }
 
     private float GetEffectiveTickInterval(IInteractionActor actor)
     {
-        if (actor != null)
-        {
-            if (_type == InteractionZoneType.PurchaseEquip)
-                return actor.SubmitTickInterval;
+        if (_type == InteractionZoneType.CollectResource)
+            return actor.CollectTickInterval;
 
-            if (_type == InteractionZoneType.SubmitResource)
-                return actor.SubmitTickInterval;
-
-            if (_type == InteractionZoneType.CollectResource)
-                return actor.CollectTickInterval;
-        }
-
-        return Mathf.Max(0f, _tickInterval);
+        return actor.SubmitTickInterval;
     }
 
     private int GetEffectiveAmountPerTick(IInteractionActor actor)
@@ -349,22 +334,12 @@ public class InteractionZone : MonoBehaviour
             _zoneEnabled = false;
 
         Completed?.Invoke(this);
-        UpdateWorldUI();
+        NotifyStateChanged();
     }
 
-    // 타입·상태에 맞게 월드 UI 텍스트·아이콘 갱신
-    private void UpdateWorldUI()
+    private void NotifyStateChanged()
     {
-        if (_amountText != null)
-            _amountText.text = InteractionZoneUIPresenter.BuildAmountText(
-                _type,
-                _runtime.StoredAmount,
-                _runtime.ProcessedAmount,
-                _completeAmount,
-                GetPurchaseRequiredAmount());
-
-        if (_iconImage != null)
-            _iconImage.sprite = InteractionZoneUIPresenter.ResolveIconSprite(_type, _resource, _purchaseEquip);
+        StateChanged?.Invoke(this);
     }
 
     // _runtime이 null이면 새로 생성 후 초기화

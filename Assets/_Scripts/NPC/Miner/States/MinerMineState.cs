@@ -1,7 +1,6 @@
 using UnityEngine;
 
-// 채굴 지점 도착 후 인터벌마다 OreMined 이벤트 발생
-// 채굴 비활성화 시 Wait 상태로 전환
+// 타겟 Mine을 인터벌마다 1 대미지씩 채굴
 public sealed class MinerMineState : NpcState<Miner>
 {
     private float _nextMineTime;
@@ -16,9 +15,23 @@ public sealed class MinerMineState : NpcState<Miner>
 
     public override void Tick(float deltaTime)
     {
-        if (!Npc.IsMiningEnabled)
+        if (!Npc.IsWorking)
         {
+            Npc.ClearTargetMine();
             Npc.EnterWait();
+            return;
+        }
+
+        if (!Npc.HasValidTargetMine)
+        {
+            Npc.ClearTargetMine();
+            Npc.EnterWait();
+            return;
+        }
+
+        if (!Npc.IsAtTargetMine())
+        {
+            Npc.EnterMoveToMine();
             return;
         }
 
@@ -26,6 +39,9 @@ public sealed class MinerMineState : NpcState<Miner>
             return;
 
         _nextMineTime = Time.time + Npc.MineInterval;
-        Npc.RaiseOreMined();
+        Npc.MineTarget();
+
+        if (!Npc.HasValidTargetMine)
+            Npc.EnterWait();
     }
 }

@@ -7603,7 +7603,7 @@ PrefabInstance:
     - target: {fileID: 665500000000000003, guid: 85272274d7616a5409a713712c4b47ad,
         type: 3}
       propertyPath: _swayCurve
-      value: 1.4
+      value: 2.1
       objectReference: {fileID: 0}
     - target: {fileID: 665500000000000003, guid: 85272274d7616a5409a713712c4b47ad,
         type: 3}

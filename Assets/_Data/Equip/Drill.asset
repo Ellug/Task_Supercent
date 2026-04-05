@@ -19,3 +19,4 @@ MonoBehaviour:
   _mineRange: 5
   _mineInterval: 0.2
   _simultaneousMineCount: 1
+  _carryCapacityBonus: 10

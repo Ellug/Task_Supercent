@@ -99,6 +99,17 @@ public class PlayerCarryVisualizer : MonoBehaviour
         _transferFlights.Clear();
     }
 
+    // Ore 슬롯 capacity를 베이스 + bonus로 재등록
+    public void ApplyOreCarryCapacityBonus(int bonus)
+    {
+        if (_carryBindings.Count == 0 || _carryBindings[0].Resource == null)
+            return;
+
+        CarryBinding oreBinding = _carryBindings[0];
+        int newCapacity = Mathf.Max(1, oreBinding.Capacity + bonus);
+        _resourceStack.RegisterSlot(oreBinding.Resource, newCapacity);
+    }
+
     // 월드 위치에서 플레이어 적재 위치로 이동하는 연출
     public void PlayIncomingTransfer(ResourceData resource, Vector3 sourceWorldPosition, int amount)
     {

@@ -10,6 +10,7 @@ public class EquipData : ScriptableObject
     [SerializeField] private float _mineRange = 2f;
     [SerializeField] private float _mineInterval = 0.6f;
     [SerializeField] private int _simultaneousMineCount = 1;
+    [SerializeField, Min(0)] private int _carryCapacityBonus = 0;
 
     public string Id => _id;
     public Sprite Icon => _icon;
@@ -17,4 +18,5 @@ public class EquipData : ScriptableObject
     public float MineRange => Mathf.Max(0f, _mineRange);
     public float MineInterval => Mathf.Max(0f, _mineInterval);
     public int SimultaneousMineCount => Mathf.Max(1, _simultaneousMineCount);
+    public int CarryCapacityBonus => _carryCapacityBonus;
 }

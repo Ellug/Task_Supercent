@@ -36,6 +36,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     private float _nextMaxPopupTime;
     private Vector2 _lastMoveInput;
     private readonly Dictionary<ResourceData, int> _lastCarryCountByResource = new();
+    private int _carryCapacityBonus;
 
     public EquipBase Equip => _equip;
     public ResourceStack CarryStack => _resourceStack;
@@ -62,12 +63,14 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     {
         ToggleMoveAction(true);
         _resourceStack.Changed += OnCarryStackChanged;
+        _equip.LevelChanged += OnEquipLevelChanged;
     }
 
     void OnDisable()
     {
         ToggleMoveAction(false);
         _resourceStack.Changed -= OnCarryStackChanged;
+        _equip.LevelChanged -= OnEquipLevelChanged;
         _view.StopMove();
         _lastMoveInput = Vector2.zero;
     }
@@ -193,6 +196,17 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     private bool TryAddCarriedResource(ResourceData resource, int amount, out int added)
     {
         return _resourceStack.TryAdd(resource, amount, out added) && added > 0;
+    }
+
+    // 장비 레벨 변경 시 누적 CarryCapacityBonus 재계산 후 Ore 슬롯 용량 갱신
+    private void OnEquipLevelChanged(int level, EquipData equip)
+    {
+        int bonus = equip != null ? equip.CarryCapacityBonus : 0;
+        if (bonus == _carryCapacityBonus)
+            return;
+
+        _carryCapacityBonus = bonus;
+        _carryVisualizer.ApplyOreCarryCapacityBonus(_carryCapacityBonus);
     }
 
     // 플레이어 캐리 스택 증감 시 입출력 SFX 재생

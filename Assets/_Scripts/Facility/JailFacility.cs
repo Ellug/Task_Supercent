@@ -15,6 +15,7 @@ public class JailFacility : MonoBehaviour
     [Header("Capacity")]
     [SerializeField, Min(1)] private int _maxCapacity = 20;
     [SerializeField, Min(0)] private int _currentCount;
+    [SerializeField, Min(1)] private int _upgradeCapacity = 40;
 
     private Prisoner _entryOwner;
 
@@ -102,6 +103,12 @@ public class JailFacility : MonoBehaviour
         NotifyStateChanged();
         LogState("CapacityChanged");
         return true;
+    }
+
+    // _upgradeCapacity로 최대 수용량 업그레이드
+    public bool Upgrade()
+    {
+        return SetMaxCapacity(_upgradeCapacity);
     }
 
     private void NotifyStateChanged()

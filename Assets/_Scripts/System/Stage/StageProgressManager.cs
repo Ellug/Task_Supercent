@@ -15,7 +15,6 @@ public class StageProgressManager : MonoBehaviour
     [SerializeField] private ResourceStack _playerCarryStack;
     [SerializeField] private JailFacility _jailFacility;
     [SerializeField] private EquipLevelLibrary _equipLevelLibrary;
-    [SerializeField, Min(1)] private int _jailUpgradeCapacity = 40;
 
     private readonly ZoneRegistry _zoneRegistry = new();
     private readonly ZoneFlowController _zoneFlowController = new();
@@ -151,7 +150,7 @@ public class StageProgressManager : MonoBehaviour
         _jailCapacityUpgradeApplied = false;
     }
 
-    // BuyJail 완료 시 JailFacility 최대 수용량 업그레이드
+    // BuyJail 완료 시 JailFacility 업그레이드 — 1회만 실행
     private void TryApplyJailCapacityUpgrade()
     {
         if (_jailCapacityUpgradeApplied)
@@ -161,7 +160,7 @@ public class StageProgressManager : MonoBehaviour
             return;
 
         int before = _jailFacility.MaxCapacity;
-        bool changed = _jailFacility.SetMaxCapacity(_jailUpgradeCapacity);
+        bool changed = _jailFacility.Upgrade();
         _jailCapacityUpgradeApplied = true;
 
         if (!changed)

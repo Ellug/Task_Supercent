@@ -9,13 +9,10 @@ public struct InteractionZoneInitialStateData
     [SerializeField] private InteractionZoneId _zoneId;
     [SerializeField] private bool _zoneEnabled;
     [SerializeField] private bool _resetProgress;
-    // true면 ResetProgress 전에 Library를 먼저 적용 (Library 설정값 기준으로 초기화)
-    [SerializeField] private bool _applyLibraryBeforeReset;
 
     public InteractionZoneId ZoneId => _zoneId;
     public bool ZoneEnabled => _zoneEnabled;
     public bool ResetProgress => _resetProgress;
-    public bool ApplyLibraryBeforeReset => _applyLibraryBeforeReset;
 }
 
 // 특정 존의 이벤트 발생 시 다른 존에 적용할 전이 한 건을 정의
@@ -23,22 +20,18 @@ public struct InteractionZoneInitialStateData
 public struct InteractionZoneTransitionData
 {
     [SerializeField] private InteractionZoneId _sourceZoneId;
-    [SerializeField] private InteractionZoneFlowTrigger _trigger;   // OnFirstInteraction / OnCompleted / OnFirstResourceAcquired / OnJailBecameFull
-    [SerializeField] private ResourceData _resourceValue;           // OnFirstResourceAcquired 전용
+    [SerializeField] private InteractionZoneFlowTrigger _trigger;
     [SerializeField] private InteractionZoneId _targetZoneId;
     [SerializeField] private InteractionZoneTransitionOperation _operation;
     [SerializeField] private bool _boolValue;
     [SerializeField] private InteractionZoneType _typeValue;
-    [SerializeField] private InteractionZoneLibrary _libraryValue;
 
     public InteractionZoneId SourceZoneId => _sourceZoneId;
     public InteractionZoneFlowTrigger Trigger => _trigger;
-    public ResourceData ResourceValue => _resourceValue;
     public InteractionZoneId TargetZoneId => _targetZoneId;
     public InteractionZoneTransitionOperation Operation => _operation;
     public bool BoolValue => _boolValue;
     public InteractionZoneType TypeValue => _typeValue;
-    public InteractionZoneLibrary LibraryValue => _libraryValue;
 }
 
 // 특정 존 완료 시 대상 존의 구매 단계를 다음 장비로 업그레이드하는 규칙 정의

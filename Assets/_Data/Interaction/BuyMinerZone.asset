@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c92f197b9ae4c488a18a79a806b2a5f, type: 3}
   m_Name: BuyMinerZone
   m_EditorClassIdentifier: 
-  _type: 0
+  _type: 3
   _zoneEnabled: 1
   _completeOnce: 1
-  _tickInterval: 0.2
-  _requireActorIdle: 1
   _stopSpeedThreshold: 0.05
   _resource: {fileID: 11400000, guid: 9d2d67b42a1f4c07a3c4d9b9c4f8e1a2, type: 2}
   _amountPerTick: 1
   _completeAmount: 50
-  _initialStoredAmount: 0
   _purchaseEquip: {fileID: 0}
   _priceOverride: 50
+  _displayIcon: {fileID: 21300000, guid: f11ebcfef12098c4d886681ffb44ff96, type: 3}

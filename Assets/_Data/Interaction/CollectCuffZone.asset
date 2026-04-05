@@ -15,12 +15,9 @@ MonoBehaviour:
   _type: 2
   _zoneEnabled: 1
   _completeOnce: 0
-  _tickInterval: 0.05
-  _requireActorIdle: 1
   _stopSpeedThreshold: 0.05
   _resource: {fileID: 11400000, guid: f0b6a9f611784ac28ca98f5e6219d2d0, type: 2}
   _amountPerTick: 1
   _completeAmount: 0
-  _initialStoredAmount: 0
   _purchaseEquip: {fileID: 0}
   _priceOverride: -1

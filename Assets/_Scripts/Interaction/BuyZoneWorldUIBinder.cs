@@ -46,7 +46,7 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
         if (_zone == null)
             return;
 
-        if (_buyZoneOnly && _zone.Type != InteractionZoneType.PurchaseEquip)
+        if (_buyZoneOnly && !InteractionZoneActionController.IsBuyAction(_zone.Type))
             return;
 
         if (_amountText != null)
@@ -60,6 +60,6 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
         }
 
         if (_iconImage != null)
-            _iconImage.sprite = InteractionZoneUI.ResolveIconSprite(_zone.Type, _zone.Resource, _zone.PurchaseEquip);
+            _iconImage.sprite = InteractionZoneUI.ResolveIconSprite(_zone.Type, _zone.Resource, _zone.PurchaseEquip, _zone.DisplayIcon);
     }
 }

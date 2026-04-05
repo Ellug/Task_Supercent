@@ -1,7 +1,78 @@
 using UnityEngine;
 
-public static class InteractionZoneActionProcessor
+// InteractionZone 실제 동작 규칙 컨트롤러
+public static class InteractionZoneActionController
 {
+    public static bool IsBuyAction(InteractionZoneType type)
+    {
+        return type == InteractionZoneType.BuyEquip ||
+               type == InteractionZoneType.BuyNpc ||
+               type == InteractionZoneType.ExpandJail;
+    }
+
+    // 타입별 틱 간격 반환
+    public static float GetTickInterval(InteractionZoneType type, IInteractionActor actor)
+    {
+        if (type == InteractionZoneType.Collect)
+            return actor.CollectTickInterval;
+
+        return actor.SubmitTickInterval;
+    }
+
+    // 타입별 틱당 처리량 반환
+    public static int GetAmountPerTick(InteractionZoneType type, IInteractionActor actor, int fallbackAmountPerTick)
+    {
+        if (actor != null)
+        {
+            if (type == InteractionZoneType.Collect)
+                return actor.CollectAmountPerTick;
+
+            return actor.SubmitAmountPerTick;
+        }
+
+        return Mathf.Max(1, fallbackAmountPerTick);
+    }
+
+    // 타입별 완료 조건 판단
+    public static bool ShouldComplete(
+        bool completeOnce,
+        InteractionZoneType type,
+        InteractionZoneRuntimeState runtimeState,
+        int purchaseRequiredAmount,
+        EquipData purchaseEquip,
+        int completeAmount,
+        IInteractionActor actor)
+    {
+        if (!completeOnce)
+            return false;
+
+        switch (type)
+        {
+            case InteractionZoneType.BuyEquip:
+            {
+                if (runtimeState.StoredAmount < purchaseRequiredAmount)
+                    return false;
+
+                if (purchaseEquip == null)
+                    return true;
+
+                return actor != null && actor.HasEquipOrBetter(purchaseEquip);
+            }
+            case InteractionZoneType.BuyNpc:
+            case InteractionZoneType.ExpandJail:
+                return runtimeState.StoredAmount >= purchaseRequiredAmount;
+            case InteractionZoneType.Submit:
+                return completeAmount > 0 && runtimeState.ProcessedAmount >= completeAmount;
+            case InteractionZoneType.Collect:
+                if (completeAmount > 0)
+                    return runtimeState.ProcessedAmount >= completeAmount;
+
+                return runtimeState.StoredAmount <= 0;
+            default:
+                return false;
+        }
+    }
+
     // 타입에 따라 구매/제출/수집 중 해당 처리 실행
     public static bool TryProcess(
         InteractionZoneType type,
@@ -22,13 +93,16 @@ public static class InteractionZoneActionProcessor
 
         switch (type)
         {
-            case InteractionZoneType.PurchaseEquip:
+            case InteractionZoneType.BuyEquip:
                 return ExecutePurchase(actor, carryStack, state, resource, amountPerTick, purchaseRequiredAmount, purchaseEquip, out movedAmount);
-            case InteractionZoneType.SubmitResource:
+            case InteractionZoneType.BuyNpc:
+            case InteractionZoneType.ExpandJail:
+                return ExecutePurchase(actor, carryStack, state, resource, amountPerTick, purchaseRequiredAmount, null, out movedAmount);
+            case InteractionZoneType.Submit:
                 if (carryStack == null || resource == null)
                     return false;
                 return ExecuteSubmit(carryStack, state, resource, amountPerTick, out movedAmount);
-            case InteractionZoneType.CollectResource:
+            case InteractionZoneType.Collect:
                 if (carryStack == null || resource == null)
                     return false;
                 return ExecuteCollect(carryStack, state, resource, amountPerTick, out movedAmount);

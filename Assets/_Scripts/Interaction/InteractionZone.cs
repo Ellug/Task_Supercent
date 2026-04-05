@@ -18,20 +18,19 @@ public class InteractionZone : MonoBehaviour
     [SerializeField] private InteractionZoneId _zoneId = InteractionZoneId.None;
 
     [Header("Zone")]
-    [SerializeField] private InteractionZoneType _type = InteractionZoneType.PurchaseEquip;
-    [SerializeField] private bool _zoneEnabled = true;
-    [SerializeField] private bool _completeOnce = true;
-    [SerializeField, Min(0f)] private float _stopSpeedThreshold = 0.05f;
+    private InteractionZoneType _type = InteractionZoneType.BuyEquip;
+    private bool _zoneEnabled = true;
+    private bool _completeOnce = true;
+    private float _stopSpeedThreshold = 0.05f;
 
     [Header("Common Resource")]
-    [SerializeField] private ResourceData _resource;
-    [SerializeField, Min(1)] private int _amountPerTick = 1;
-    [SerializeField, Min(0)] private int _completeAmount = 1;
-    [SerializeField, Min(0)] private int _storedAmount;
+    private ResourceData _resource;
+    private int _amountPerTick = 1;
+    private int _completeAmount = 1;
 
     [Header("Purchase")]
-    [SerializeField] private EquipData _purchaseEquip;
-    [SerializeField] private int _priceOverride = -1;
+    private EquipData _purchaseEquip;
+    private int _priceOverride = -1;
 
     [Header("Runtime")]
     [SerializeField] private InteractionZoneRuntimeState _runtime = new();
@@ -48,6 +47,7 @@ public class InteractionZone : MonoBehaviour
     public int ProcessedAmount => _runtime.ProcessedAmount;
     public ResourceData Resource => _resource;
     public EquipData PurchaseEquip => _purchaseEquip;
+    public Sprite DisplayIcon => _library != null ? _library.DisplayIcon : null;
     public int AmountPerTick => _amountPerTick;
     public int CompleteAmount => _completeAmount;
     public int PurchaseRequiredAmount => GetPurchaseRequiredAmount();
@@ -68,7 +68,7 @@ public class InteractionZone : MonoBehaviour
             return;
         }
 
-        _runtime.ResetProgress(_storedAmount);
+        _runtime.ResetProgress(0);
         NotifyStateChanged();
     }
 
@@ -84,13 +84,13 @@ public class InteractionZone : MonoBehaviour
         if (_completeOnce && _runtime.Completed)
             return;
 
-        if (_type == InteractionZoneType.PurchaseEquip && !_actorInZone.IsInteractionReady(_stopSpeedThreshold))
+        if (InteractionZoneActionController.IsBuyAction(_type) && !_actorInZone.IsInteractionReady(_stopSpeedThreshold))
             return;
 
         if (Time.time < _nextTickTime)
             return;
 
-        _nextTickTime = Time.time + InteractionZoneRuleController.GetTickInterval(_type, _actorInZone);
+        _nextTickTime = Time.time + InteractionZoneActionController.GetTickInterval(_type, _actorInZone);
         TryProcessInteraction(_actorInZone);
     }
 
@@ -127,7 +127,7 @@ public class InteractionZone : MonoBehaviour
     public void SetZoneType(InteractionZoneType type)
     {
         _type = type;
-        _runtime.ResetProgress(_storedAmount);
+        _runtime.ResetProgress(0);
         _nextTickTime = 0f;
         NotifyStateChanged();
     }
@@ -146,14 +146,13 @@ public class InteractionZone : MonoBehaviour
     public void AddStoredAmount(int amount)
     {
         _runtime.AddStored(amount);
-        SyncStoredAmountField();
         NotifyStateChanged();
     }
 
     // 진행 상태 초기화
     public void ResetProgress()
     {
-        _runtime.ResetProgress(_storedAmount);
+        _runtime.ResetProgress(0);
         _nextTickTime = 0f;
         _actorInZone = null;
         NotifyStateChanged();
@@ -173,13 +172,12 @@ public class InteractionZone : MonoBehaviour
         _resource = library.Resource;
         _amountPerTick = library.AmountPerTick;
         _completeAmount = library.CompleteAmount;
-        _storedAmount = library.InitialStoredAmount;
         _purchaseEquip = library.PurchaseEquip;
         _priceOverride = library.PriceOverride;
 
         if (resetProgress)
         {
-            _runtime.ResetProgress(_storedAmount);
+            _runtime.ResetProgress(0);
         }
 
         NotifyStateChanged();
@@ -195,11 +193,10 @@ public class InteractionZone : MonoBehaviour
         bool zoneEnabled,
         bool resetProgress)
     {
-        _type = InteractionZoneType.PurchaseEquip;
+        _type = InteractionZoneType.BuyEquip;
         _resource = costResource;
         _amountPerTick = Mathf.Max(1, amountPerTick);
         _completeAmount = 0;
-        _storedAmount = 0;
         _purchaseEquip = purchaseEquip;
         _priceOverride = Mathf.Max(1, requiredAmount);
         _completeOnce = completeOnce;
@@ -214,12 +211,12 @@ public class InteractionZone : MonoBehaviour
     // 타입에 맞는 인터랙션 실행 — 최초 성공 시 Started 이벤트, 완료 조건 충족 시 CompleteZone
     private void TryProcessInteraction(IInteractionActor actor)
     {
-        bool success = InteractionZoneActionProcessor.TryProcess(
+        bool success = InteractionZoneActionController.TryProcess(
             _type,
             actor,
             _runtime,
             _resource,
-            InteractionZoneRuleController.GetAmountPerTick(_type, actor, _amountPerTick),
+            InteractionZoneActionController.GetAmountPerTick(_type, actor, _amountPerTick),
             GetPurchaseRequiredAmount(),
             _purchaseEquip,
             out _);
@@ -227,15 +224,13 @@ public class InteractionZone : MonoBehaviour
         if (!success)
             return;
 
-        SyncStoredAmountField();
-
         if (!_runtime.Started)
         {
             _runtime.MarkStarted();
             Started?.Invoke(this);
         }
 
-        if (InteractionZoneRuleController.ShouldComplete(
+        if (InteractionZoneActionController.ShouldComplete(
             _completeOnce,
             _type,
             _runtime,
@@ -276,11 +271,5 @@ public class InteractionZone : MonoBehaviour
     private void NotifyStateChanged()
     {
         StateChanged?.Invoke(this);
-    }
-
-    // 직렬화 필드 _storedAmount를 런타임 상태와 동기화
-    private void SyncStoredAmountField()
-    {
-        _storedAmount = _runtime.StoredAmount;
     }
 }

@@ -23,6 +23,14 @@ public class PlayerCarryVisualizer : MonoBehaviour
     [SerializeField] private ResourceData _moneyResource;
     [SerializeField, Min(0f)] private float _moneyBackOffsetWhenOreExists = 0.45f;
 
+    [Header("Sway")]
+    [SerializeField, Min(0f)] private float _swayStrength = 0.004f;      // 이동 중 sway 목표 오프셋
+    [SerializeField, Min(0f)] private float _swaySmoothing = 8f;          // sway 추종 속도
+    [SerializeField, Min(0f)] private float _swayMaxOffset = 0.12f;       // 층당 최대 sway 오프셋
+    [SerializeField] private float _swayCurve = 1.4f;                     // 지수 커브 (1=선형, >1 위로 갈수록 급격히 휨)
+    [SerializeField, Min(0f)] private float _bounceStrength = 0.008f;     // 멈출 때 앞으로 튀는 세기
+    [SerializeField, Min(0f)] private float _bounceDamping = 6;         // bounce 감쇠 속도
+
     private readonly Dictionary<ResourceData, CarryBinding> _bindingByResource = new();
     private readonly Dictionary<ResourceData, List<GameObject>> _spawnedViewsByResource = new();
     private readonly List<ResourceStack.Slot> _slotBuffer = new();
@@ -30,8 +38,14 @@ public class PlayerCarryVisualizer : MonoBehaviour
     private ResourceData _resolvedOreResource;
     private ResourceData _resolvedMoneyResource;
 
+    private PlayerController _playerController;
+    private bool _wasMoving;
+    private Vector3 _swayOffset;    // 이동 중 관성 sway (위로 갈수록 지수적으로 증가)
+    private Vector3 _bounceOffset;  // 멈추는 순간 앞으로 튕기는 오프셋 (독립 감쇠)
+
     void Awake()
     {
+        _playerController = GetComponent<PlayerController>();
         RebuildCarryBindings();
         ResolvePriorityResources();
         ConfigureCarrySlots();
@@ -40,6 +54,9 @@ public class PlayerCarryVisualizer : MonoBehaviour
 
     void OnEnable()
     {
+        _wasMoving = false;
+        _swayOffset = Vector3.zero;
+        _bounceOffset = Vector3.zero;
         _resourceStack.Changed += OnCarryChanged;
         SyncAllCarryVisuals();
     }
@@ -47,6 +64,12 @@ public class PlayerCarryVisualizer : MonoBehaviour
     void OnDisable()
     {
         _resourceStack.Changed -= OnCarryChanged;
+    }
+
+    void LateUpdate()
+    {
+        UpdateSway();
+        UpdateAllVisualPositions();
     }
 
     // 스폰된 뷰 오브젝트 전체 반환
@@ -212,20 +235,48 @@ public class PlayerCarryVisualizer : MonoBehaviour
             views.Add(view);
         }
 
+        PlaceResourceViews(resource, binding);
+    }
+
+    // 등록된 모든 자원 뷰 위치를 sway 포함해 갱신 (LateUpdate에서 매 프레임 호출)
+    private void UpdateAllVisualPositions()
+    {
+        foreach (var pair in _bindingByResource)
+        {
+            if (_spawnedViewsByResource.TryGetValue(pair.Key, out List<GameObject> views) && views.Count > 0)
+                PlaceResourceViews(pair.Key, pair.Value);
+        }
+    }
+
+    // 뷰 오브젝트들의 위치를 sway 오프셋을 층마다 누적 적용해서 배치
+    private void PlaceResourceViews(ResourceData resource, CarryBinding binding)
+    {
+        if (!_spawnedViewsByResource.TryGetValue(resource, out List<GameObject> views))
+            return;
+
+        Transform root = binding.StackRoot;
+        Quaternion stackRotation = GetHorizontalRotation(root);
+
         for (int i = 0; i < views.Count; i++)
         {
+            // 실제 y 높이(VerticalSpacing * i)를 지수 커브에 넣어 sway 계산
+            // → spacing이 다른 Ore/Money가 같은 높이면 동일한 sway를 가짐
+            float heightT = binding.VerticalSpacing * i;
+            float curve = heightT > 0f ? Mathf.Pow(heightT, _swayCurve) : 0f;
+            Vector3 layerSway = (_swayOffset + _bounceOffset) * curve;
+
             GameObject view = views[i];
             if (TryGetOverrideWorldPosition(resource, binding, i, out Vector3 overridePosition))
             {
-                view.transform.position = overridePosition;
-                view.transform.rotation = Quaternion.identity;
+                view.transform.position = overridePosition + layerSway;
+                view.transform.rotation = stackRotation;
                 continue;
             }
 
             if (_resourceStack.TryGetWorldPosition(resource, i, out Vector3 worldPosition))
             {
-                view.transform.position = worldPosition;
-                view.transform.rotation = Quaternion.identity;
+                view.transform.position = worldPosition + layerSway;
+                view.transform.rotation = stackRotation;
                 continue;
             }
 
@@ -268,5 +319,57 @@ public class PlayerCarryVisualizer : MonoBehaviour
 
         worldPosition = basePosition + (Vector3.up * (binding.VerticalSpacing * index));
         return true;
+    }
+
+    // 인풋 기반 sway + 멈추는 순간 bounce 계산
+    private void UpdateSway()
+    {
+        float dt = Time.deltaTime;
+        if (dt <= 0f)
+            return;
+
+        bool isMoving = _playerController != null && _playerController.LastMoveInput.sqrMagnitude > 0.0001f;
+
+        // 이동 중이면 플레이어 forward 반대 방향으로 sway, 정지면 0으로 복귀
+        Vector3 targetSway = Vector3.zero;
+        if (isMoving)
+        {
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude > 0.0001f)
+                targetSway = -forward.normalized * _swayStrength;
+        }
+
+        _swayOffset = Vector3.Lerp(_swayOffset, targetSway, dt * _swaySmoothing);
+
+        // 이동 → 정지 전환 순간 bounce 발동 (이전 프레임에 이동 중이었으면)
+        if (_wasMoving && !isMoving)
+        {
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude > 0.0001f)
+                _bounceOffset = forward.normalized * _bounceStrength;
+        }
+
+        _wasMoving = isMoving;
+
+        // bounce는 독립적으로 0을 향해 감쇠
+        _bounceOffset = Vector3.Lerp(_bounceOffset, Vector3.zero, dt * _bounceDamping);
+    }
+
+    // StackRoot의 forward를 수평으로 정규화한 rotation 반환
+    // forward가 수직에 가까우면 world forward로 폴백
+    private static Quaternion GetHorizontalRotation(Transform root)
+    {
+        if (root == null)
+            return Quaternion.identity;
+
+        Vector3 forward = root.forward;
+        forward.y = 0f;
+
+        if (forward.sqrMagnitude < 0.0001f)
+            return Quaternion.identity;
+
+        return Quaternion.LookRotation(forward.normalized, Vector3.up);
     }
 }

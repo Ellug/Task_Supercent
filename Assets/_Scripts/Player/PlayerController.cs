@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
 
     public EquipBase Equip => _equip;
     public ResourceStack CarryStack => _resourceStack;
+    public Vector2 LastMoveInput => _lastMoveInput;
     public float SubmitTickInterval => Mathf.Max(0f, _transferTickInterval);
     public int SubmitAmountPerTick => Mathf.Max(1, _transferAmountPerTick);
     public float CollectTickInterval => Mathf.Max(0f, _transferTickInterval);

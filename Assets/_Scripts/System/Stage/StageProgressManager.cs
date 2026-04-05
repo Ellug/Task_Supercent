@@ -4,7 +4,7 @@ using UnityEngine;
 // 스테이지 진행 오케스트레이터
 // - Zone 흐름 실행
 // - 구매 업그레이드 적용
-// - 외부 상태(자원/Jail) 연결
+// - 외부 상태(Jail) 연결
 [DisallowMultipleComponent]
 public class StageProgressManager : MonoBehaviour
 {
@@ -12,7 +12,6 @@ public class StageProgressManager : MonoBehaviour
     [SerializeField] private InteractionZoneFlowLibrary _flowLibrary;
 
     [Header("External Sources")]
-    [SerializeField] private ResourceStack _playerCarryStack;
     [SerializeField] private JailFacility _jailFacility;
     [SerializeField] private EquipLevelLibrary _equipLevelLibrary;
 
@@ -21,7 +20,6 @@ public class StageProgressManager : MonoBehaviour
     private readonly ZonePurchaseUpgradeService _purchaseUpgradeService = new();
     private readonly StageStateMonitor _stageStateMonitor = new();
     private readonly List<InteractionZone> _subscribedZones = new();
-    private readonly List<ResourceData> _resourceRuleKeys = new();
 
     private bool _jailCapacityUpgradeApplied;
 
@@ -69,14 +67,9 @@ public class StageProgressManager : MonoBehaviour
     // 외부 상태 이벤트 감시 연결
     private void BindStageStateMonitor()
     {
-        _zoneFlowController.FillFirstResourceKeys(_resourceRuleKeys);
-
         _stageStateMonitor.Bind(
-            _playerCarryStack,
             _jailFacility,
-            _resourceRuleKeys,
             _zoneFlowController.HasJailFullRules,
-            OnFirstResourceAcquired,
             OnJailStateEvaluated);
     }
 
@@ -98,12 +91,6 @@ public class StageProgressManager : MonoBehaviour
         _zoneFlowController.OnZoneCompleted(zone.ZoneId);
         _purchaseUpgradeService.ApplyForTrigger(zone.ZoneId);
         ApplyZoneCompleteSideEffects(zone);
-    }
-
-    // 최초 자원 획득 트리거 처리
-    private void OnFirstResourceAcquired(ResourceData resource)
-    {
-        _zoneFlowController.OnFirstResourceAcquired(resource);
     }
 
     // Jail open/close 상태 트리거 처리
@@ -142,7 +129,6 @@ public class StageProgressManager : MonoBehaviour
         }
 
         _subscribedZones.Clear();
-        _resourceRuleKeys.Clear();
         _stageStateMonitor.Unbind();
         _zoneFlowController.Clear();
         _purchaseUpgradeService.Clear();

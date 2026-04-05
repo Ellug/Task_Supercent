@@ -1,10 +1,10 @@
-using UnityEngine;
-
 public enum InteractionZoneType
 {
-    PurchaseEquip = 0,
-    SubmitResource = 1,
-    CollectResource = 2,
+    BuyEquip = 0,
+    Submit = 1,
+    Collect = 2,
+    BuyNpc = 3,
+    ExpandJail = 4,
 }
 
 public enum InteractionZoneId
@@ -24,7 +24,6 @@ public enum InteractionZoneFlowTrigger
 {
     OnFirstInteraction = 0,
     OnCompleted = 1,
-    OnFirstResourceAcquired = 2,
     OnJailBecameFull = 3,
 }
 
@@ -34,7 +33,6 @@ public enum InteractionZoneTransitionOperation
     SetGameObjectActive = 1,
     SetCompleted = 2,
     ChangeType = 3,
-    ApplyLibrary = 4,
 }
 
 

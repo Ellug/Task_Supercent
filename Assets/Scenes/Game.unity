@@ -6206,7 +6206,7 @@ PrefabInstance:
         type: 3}
       propertyPath: _library
       value: 
-      objectReference: {fileID: 11400000, guid: ff95e52f93ff4ae2a89a03371af97555,
+      objectReference: {fileID: 11400000, guid: 102c227acac7412cab69a56eacf265cb,
         type: 2}
     - target: {fileID: 1276629044145448981, guid: 2f4183053351f8949b374c16ca1016e7,
         type: 3}
@@ -6582,6 +6582,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: ff95e52f93ff4ae2a89a03371af97555,
         type: 2}
+    - target: {fileID: 410000000000000001, guid: 2f4183053351f8949b374c16ca1016e7,
+        type: 3}
+      propertyPath: _purchaseEquip
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 812345670000000001, guid: 2f4183053351f8949b374c16ca1016e7,
         type: 3}
       propertyPath: m_IsActive
@@ -6835,10 +6840,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _flowLibrary: {fileID: 11400000, guid: 59ad9c4a41f44376bb6935a1d75bd492, type: 2}
-  _playerCarryStack: {fileID: 1540641808795954819}
   _jailFacility: {fileID: 1240680688}
   _equipLevelLibrary: {fileID: 11400000, guid: 0e67b29fd878479cb01e90028e0b8801, type: 2}
-  _jailUpgradeCapacity: 40
 --- !u!4 &1915693673
 Transform:
   m_ObjectHideFlags: 0
@@ -7113,6 +7116,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: aa3bee285e6e433d8d25148ef934cafd,
         type: 2}
+    - target: {fileID: 410000000000000001, guid: 2f4183053351f8949b374c16ca1016e7,
+        type: 3}
+      propertyPath: _purchaseEquip
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 812345670000000001, guid: 2f4183053351f8949b374c16ca1016e7,
         type: 3}
       propertyPath: m_IsActive
@@ -7592,6 +7600,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 665500000000000003, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _swayCurve
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 665500000000000003, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _swayStrength
+      value: 0.004
+      objectReference: {fileID: 0}
+    - target: {fileID: 665500000000000003, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _bounceDamping
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 665500000000000003, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _bounceStrength
+      value: 0.008
+      objectReference: {fileID: 0}
     - target: {fileID: 2426179924602204107, guid: 85272274d7616a5409a713712c4b47ad,
         type: 3}
       propertyPath: _moveSpeed
@@ -7628,18 +7656,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 85272274d7616a5409a713712c4b47ad, type: 3}
---- !u!114 &1540641808795954819 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 665500000000000002, guid: 85272274d7616a5409a713712c4b47ad,
-    type: 3}
-  m_PrefabInstance: {fileID: 1540641808795954818}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b978c9572915aa4b8feea331a98d014, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1540641808795954820 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3867678400118706670, guid: 85272274d7616a5409a713712c4b47ad,
@@ -7891,11 +7907,11 @@ SceneRoots:
   - {fileID: 644187653}
   - {fileID: 5891720863587000938}
   - {fileID: 7852872446451849991}
+  - {fileID: 389874329}
   - {fileID: 2458886901145546425}
   - {fileID: 2115451539}
   - {fileID: 1901504199}
   - {fileID: 1827455303}
-  - {fileID: 389874329}
   - {fileID: 252265095}
   - {fileID: 1540641808795954818}
   - {fileID: 1528359770}

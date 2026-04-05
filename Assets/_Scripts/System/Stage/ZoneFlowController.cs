@@ -11,34 +11,28 @@ public sealed class ZoneFlowController
         public readonly InteractionZoneTransitionOperation Operation;
         public readonly bool BoolValue;
         public readonly InteractionZoneType TypeValue;
-        public readonly InteractionZoneLibrary LibraryValue;
 
         public ResolvedTransition(
             InteractionZone target,
             InteractionZoneTransitionOperation operation,
             bool boolValue,
-            InteractionZoneType typeValue,
-            InteractionZoneLibrary libraryValue)
+            InteractionZoneType typeValue)
         {
             Target = target;
             Operation = operation;
             BoolValue = boolValue;
             TypeValue = typeValue;
-            LibraryValue = libraryValue;
         }
     }
 
     private readonly Dictionary<InteractionZoneId, List<ResolvedTransition>> _onFirstTransitionsBySource = new();
     private readonly Dictionary<InteractionZoneId, List<ResolvedTransition>> _onCompletedTransitionsBySource = new();
-    private readonly Dictionary<ResourceData, List<ResolvedTransition>> _onFirstResourceTransitionsByResource = new();
     private readonly List<ResolvedTransition> _onJailBecameFullTransitions = new();
     private readonly HashSet<InteractionZoneId> _appliedCompletedTransitionSourceIds = new();
-    private readonly HashSet<ResourceData> _appliedFirstResourceTransitionResources = new();
 
     private ZoneRegistry _zoneRegistry;
     private bool _jailFullTransitionsApplied;
 
-    public bool HasFirstResourceRules => _onFirstResourceTransitionsByResource.Count > 0;
     public bool HasJailFullRules => _onJailBecameFullTransitions.Count > 0;
 
     // FlowLibrary 데이터 초기화
@@ -51,23 +45,6 @@ public sealed class ZoneFlowController
         Clear();
         ApplyInitialStates(initialStates);
         BuildTransitions(transitions);
-    }
-
-    // 외부 상태 모니터가 참고할 자원 키 목록 채움
-    public void FillFirstResourceKeys(List<ResourceData> results)
-    {
-        if (results == null)
-            return;
-
-        results.Clear();
-
-        foreach (ResourceData resource in _onFirstResourceTransitionsByResource.Keys)
-        {
-            if (resource == null)
-                continue;
-
-            results.Add(resource);
-        }
     }
 
     // OnFirstInteraction 전이 적용
@@ -83,22 +60,6 @@ public sealed class ZoneFlowController
             return;
 
         ApplyTransitions(_onCompletedTransitionsBySource, sourceZoneId);
-    }
-
-    // OnFirstResourceAcquired 전이 1회 적용
-    public void OnFirstResourceAcquired(ResourceData resource)
-    {
-        if (resource == null)
-            return;
-
-        if (_appliedFirstResourceTransitionResources.Contains(resource))
-            return;
-
-        if (!_onFirstResourceTransitionsByResource.ContainsKey(resource))
-            return;
-
-        _appliedFirstResourceTransitionResources.Add(resource);
-        ApplyTransitions(_onFirstResourceTransitionsByResource, resource);
     }
 
     // 감옥 상태 평가 (닫힘이면 Full 처리)
@@ -122,10 +83,8 @@ public sealed class ZoneFlowController
     {
         _onFirstTransitionsBySource.Clear();
         _onCompletedTransitionsBySource.Clear();
-        _onFirstResourceTransitionsByResource.Clear();
         _onJailBecameFullTransitions.Clear();
         _appliedCompletedTransitionSourceIds.Clear();
-        _appliedFirstResourceTransitionResources.Clear();
         _jailFullTransitionsApplied = false;
     }
 
@@ -141,10 +100,13 @@ public sealed class ZoneFlowController
             if (!_zoneRegistry.TryGetZone(state.ZoneId, out InteractionZone zone))
                 continue;
 
-            if (state.ApplyLibraryBeforeReset && zone.Library != null)
-                zone.ApplyLibrary(zone.Library, true);
-            else if (state.ResetProgress)
-                zone.ResetProgress();
+            if (state.ResetProgress)
+            {
+                if (zone.Library != null)
+                    zone.ApplyLibrary(zone.Library, true);
+                else
+                    zone.ResetProgress();
+            }
 
             zone.SetCompleted(false);
             zone.SetZoneEnabled(state.ZoneEnabled);
@@ -167,8 +129,7 @@ public sealed class ZoneFlowController
                 targetZone,
                 data.Operation,
                 data.BoolValue,
-                data.TypeValue,
-                data.LibraryValue);
+                data.TypeValue);
 
             switch (data.Trigger)
             {
@@ -180,15 +141,6 @@ public sealed class ZoneFlowController
                     if (_zoneRegistry.TryGetZone(data.SourceZoneId, out InteractionZone completedSourceZone))
                         AddTransition(_onCompletedTransitionsBySource, completedSourceZone.ZoneId, transition);
                     break;
-                case InteractionZoneFlowTrigger.OnFirstResourceAcquired:
-                {
-                    ResourceData resource = data.ResourceValue;
-                    if (resource == null)
-                        break;
-
-                    AddTransition(_onFirstResourceTransitionsByResource, resource, transition);
-                    break;
-                }
                 case InteractionZoneFlowTrigger.OnJailBecameFull:
                     _onJailBecameFullTransitions.Add(transition);
                     break;
@@ -222,17 +174,6 @@ public sealed class ZoneFlowController
         ApplyTransitions(transitions);
     }
 
-    // Resource 기반 전이 적용
-    private void ApplyTransitions(
-        Dictionary<ResourceData, List<ResolvedTransition>> map,
-        ResourceData resource)
-    {
-        if (!map.TryGetValue(resource, out List<ResolvedTransition> transitions))
-            return;
-
-        ApplyTransitions(transitions);
-    }
-
     // 전이 리스트 일괄 적용
     private void ApplyTransitions(List<ResolvedTransition> transitions)
     {
@@ -260,9 +201,6 @@ public sealed class ZoneFlowController
                 break;
             case InteractionZoneTransitionOperation.ChangeType:
                 target.SetZoneType(transition.TypeValue);
-                break;
-            case InteractionZoneTransitionOperation.ApplyLibrary:
-                target.ApplyLibrary(transition.LibraryValue, true);
                 break;
         }
     }

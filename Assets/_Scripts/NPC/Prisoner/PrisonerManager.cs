@@ -339,15 +339,10 @@ public class PrisonerManager : MonoBehaviour
         _queueSlot = SpawnQueueSlot();
     }
 
-    // 감옥이 닫혔거나, 이미 감옥으로 향하는 인원이 남은 수용량을 모두 점유한 경우
-    // Receive 단계의 공급/출발을 멈춘다.
+    // 감옥이 닫힌 경우에만 Receive 단계의 공급/출발을 멈춘다.
     private bool CanDispatchReceivePrisonerToPrison()
     {
-        if (_jailFacility == null)
-            return true;
-
-        int reservedCount = _movingToEntrance.Count + _entranceQueue.Count + (_movingInside != null ? 1 : 0);
-        return (_jailFacility.CurrentCount + reservedCount) < _jailFacility.MaxCapacity;
+        return IsJailOpen;
     }
 
     // 수령 포인트 — _receivePoint > _queuePoint > self 순 폴백

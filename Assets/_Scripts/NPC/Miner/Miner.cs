@@ -5,8 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class Miner : NPC
 {
-    private const int MineHitSfxId = 3;
-
     [Header("Mining")]
     [SerializeField, Min(0.05f)] private float _mineInterval = 1f;
     [SerializeField, Min(1)] private int _mineDamage = 1;
@@ -126,7 +124,7 @@ public class Miner : NPC
         }
 
         if (AudioManager.IsInMainCameraView(transform.position))
-            AudioManager.TryPlaySFXViaSource(MineHitSfxId, _mineSfxSource);
+            AudioManager.TryPlaySFXViaSource(3, _mineSfxSource);
 
         if (!_targetMine.TryMine(MineDamage, out ResourceData yieldResource, out int yieldAmount))
             return;

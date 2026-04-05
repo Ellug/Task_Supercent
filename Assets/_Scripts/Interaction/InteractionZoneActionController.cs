@@ -168,6 +168,7 @@ public static class InteractionZoneActionController
     }
 
     // state에서 amountPerTick만큼 꺼내 액터 캐리 스택에 추가
+    // Money 리소스는 한 번에 전부 수거
     private static bool ExecuteCollect(
         ResourceStack carryStack,
         InteractionZoneRuntimeState state,
@@ -180,7 +181,10 @@ public static class InteractionZoneActionController
         if (state.StoredAmount <= 0)
             return false;
 
-        int amount = Mathf.Min(Mathf.Max(1, amountPerTick), state.StoredAmount);
+        int amount = resource != null && resource.IsMoney
+            ? state.StoredAmount
+            : Mathf.Min(Mathf.Max(1, amountPerTick), state.StoredAmount);
+
         if (!carryStack.TryAdd(resource, amount, out int added) || added <= 0)
             return false;
 

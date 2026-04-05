@@ -7160,7 +7160,7 @@ GameObject:
   - component: {fileID: 1949545110}
   - component: {fileID: 1949545109}
   m_Layer: 5
-  m_Name: Max Canvas
+  m_Name: PopUI Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7396,7 +7396,6 @@ MonoBehaviour:
   _spawnRoot: {fileID: 2071001001}
   _baseVisual: {fileID: 2071001011}
   _thumbVisual: {fileID: 2071001021}
-  _showOnlyWhileDragging: 1
   _maxDragDistance: 120
   _thumbEdgeOverflow: 4
 --- !u!1 &2071001010

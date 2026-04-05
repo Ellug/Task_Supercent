@@ -10,7 +10,6 @@ public class PlayerController : MonoBehaviour, IInteractionActor
 {
     private const string PlayerMapName = "Player";
     private const string MoveActionName = "Move";
-    private const int CarryTransferSfxId = 0;
 
     [Header("Input")]
     [SerializeField] private InputActionAsset _inputActions;
@@ -205,6 +204,12 @@ public class PlayerController : MonoBehaviour, IInteractionActor
         if (newCount == previous)
             return;
 
-        AudioManager.TryPlaySFX(CarryTransferSfxId);
+        if (resource != null && resource.IsMoney && newCount > previous)
+        {
+            AudioManager.TryPlaySFX(4);
+            return;
+        }
+
+        AudioManager.TryPlaySFX(0);
     }
 }

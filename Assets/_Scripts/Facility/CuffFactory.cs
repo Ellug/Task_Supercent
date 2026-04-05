@@ -7,7 +7,6 @@ public class CuffFactory : FacilityBase
 {
     private const int ProduceConsumeAmountPerCycle = 1;
     private const float ProduceIntervalSeconds = 0.5f;
-    private const int CuffSpawnSfxId = 1;
 
     [Header("Capacity")]
     [SerializeField, Min(1)] private int _submitMaxCapacity = 50;
@@ -234,6 +233,6 @@ public class CuffFactory : FacilityBase
         if (!AudioManager.IsInMainCameraView(spawnPosition))
             return;
 
-        AudioManager.TryPlayWorldSFX(CuffSpawnSfxId, spawnPosition);
+        AudioManager.TryPlayWorldSFX(1, spawnPosition);
     }
 }

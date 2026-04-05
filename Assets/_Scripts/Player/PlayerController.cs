@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     [SerializeField] private ResourceStack _resourceStack;
     [SerializeField] private PlayerCarryVisualizer _carryVisualizer;
     [SerializeField] private ResourceManager _resourceManager;
+    [SerializeField] private FloatingJoystickInput _floatingJoystickInput;
 
     [Header("Mine")]
     [SerializeField, Range(-1f, 1f)] private float _mineForwardDotMin = 0f;
@@ -74,12 +75,24 @@ public class PlayerController : MonoBehaviour, IInteractionActor
 
     void FixedUpdate()
     {
-        Vector2 moveInput = _moveAction.ReadValue<Vector2>();
+        Vector2 moveInput = ReadMoveInput();
         // 입력 정규화 후 이동 적용
         Vector2 finalMoveInput = _model.ComposeMoveInput(moveInput);
         _lastMoveInput = finalMoveInput;
 
         _view.ApplyMove(finalMoveInput, _model.MoveSpeed);
+    }
+
+    // 드래그 조이스틱 입력 우선, 없으면 기존 InputAction 입력 사용
+    private Vector2 ReadMoveInput()
+    {
+        if (_floatingJoystickInput != null && _floatingJoystickInput.IsDragging)
+            return _floatingJoystickInput.MoveInput;
+
+        if (_moveAction == null)
+            return Vector2.zero;
+
+        return _moveAction.ReadValue<Vector2>();
     }
 
     // 이동 입력 없음 + 실제 속도 임계값 이하일 때 인터랙션 가능 상태로 판단

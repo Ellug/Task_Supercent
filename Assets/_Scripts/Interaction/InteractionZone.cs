@@ -32,6 +32,9 @@ public class InteractionZone : MonoBehaviour
     private EquipData _purchaseEquip;
     private int _priceOverride = -1;
 
+    [Header("Indicator")]
+    [SerializeField] private UnityEngine.UI.Image _indicatorImage;
+
     [Header("Runtime")]
     [SerializeField] private InteractionZoneRuntimeState _runtime = new();
 
@@ -102,6 +105,7 @@ public class InteractionZone : MonoBehaviour
             return;
 
         _actorInZone = actor;
+        SetIndicatorActive(true);
     }
 
     // 존을 벗어난 액터 해제
@@ -110,8 +114,11 @@ public class InteractionZone : MonoBehaviour
         if (!InteractionActorResolver.TryResolve(other, out IInteractionActor actor))
             return;
 
-        if (ReferenceEquals(_actorInZone, actor))
-            _actorInZone = null;
+        if (!ReferenceEquals(_actorInZone, actor))
+            return;
+
+        _actorInZone = null;
+        SetIndicatorActive(false);
     }
 
     // 존 활성/비활성 전환 — 비활성 시 액터 참조 해제
@@ -274,6 +281,14 @@ public class InteractionZone : MonoBehaviour
     private void NotifyStateChanged()
     {
         StateChanged?.Invoke(this);
+    }
+
+    private void SetIndicatorActive(bool active)
+    {
+        if (_indicatorImage == null)
+            return;
+
+        _indicatorImage.color = active ? Color.green : Color.white;
     }
 
     // 플레이어 자원 이동 연출 트리거

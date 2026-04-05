@@ -7,6 +7,9 @@ using UnityEngine;
 [RequireComponent(typeof(ResourceStack))]
 public class PlayerCarryVisualizer : MonoBehaviour
 {
+    private const float MinTransferMoveSpeed = 26f;
+    private const float TransferRotationFollowSpeed = 20f;
+
     [SerializeField] private ResourceStack _resourceStack;
     [SerializeField] private List<CarryBinding> _carryBindings = new();
     [SerializeField, Min(0f)] private float _moneyBackOffsetWhenOreExists = 0.45f;
@@ -18,8 +21,30 @@ public class PlayerCarryVisualizer : MonoBehaviour
     [SerializeField, Min(0f)] private float _bounceStrength = 0.008f;
     [SerializeField, Min(0f)] private float _bounceDamping = 6f;
 
+    [Header("Transfer Visual")]
+    [SerializeField, Min(0.1f)] private float _transferMoveSpeed = 28f;
+    [SerializeField, Min(0f)] private float _transferArcHeight = 0.22f;
+    [SerializeField, Min(0f)] private float _transferScatter = 0.03f;
+    [SerializeField] private Vector3 _transferSourceOffset = new(0f, 0.1f, 0f);
+
+    private sealed class TransferFlight
+    {
+        public GameObject View;
+        public Vector3 Start;
+        public Vector3 End;
+        public float Duration;
+        public float Elapsed;
+        public Quaternion StartRotation;
+        public Quaternion EndRotation;
+        public bool FollowEnd;
+        public ResourceData Resource;
+        public CarryBinding Binding;
+        public int SlotIndex;
+    }
+
     private readonly Dictionary<ResourceData, List<GameObject>> _spawnedViewsByResource = new();
     private readonly List<ResourceData> _resourceKeyBuffer = new();
+    private readonly List<TransferFlight> _transferFlights = new();
 
     private PlayerCarryConfig _config;
     private PlayerCarrySwayCalculator _sway;
@@ -55,6 +80,7 @@ public class PlayerCarryVisualizer : MonoBehaviour
         bool isMoving = _playerController != null && _playerController.LastMoveInput.sqrMagnitude > 0.0001f;
         _sway.Tick(Time.deltaTime, isMoving, transform.forward);
         UpdateAllVisualPositions();
+        UpdateTransferFlights();
     }
 
     void OnDestroy()
@@ -63,6 +89,50 @@ public class PlayerCarryVisualizer : MonoBehaviour
             PooledViewBridge.ReleaseAll(pair.Value);
 
         _spawnedViewsByResource.Clear();
+
+        for (int i = 0; i < _transferFlights.Count; i++)
+        {
+            if (_transferFlights[i]?.View != null)
+                PooledViewBridge.Release(_transferFlights[i].View);
+        }
+
+        _transferFlights.Clear();
+    }
+
+    // 월드 위치에서 플레이어 적재 위치로 이동하는 연출
+    public void PlayIncomingTransfer(ResourceData resource, Vector3 sourceWorldPosition, int amount)
+    {
+        if (!TryGetBinding(resource, out CarryBinding binding))
+            return;
+
+        Quaternion stackRotation = PlayerCarrySwayCalculator.GetHorizontalRotation(binding.StackRoot);
+        int stackCount = Mathf.Max(0, _resourceStack.GetCount(resource));
+        int count = Mathf.Max(1, amount);
+        for (int i = 0; i < count; i++)
+        {
+            Vector3 start = sourceWorldPosition + _transferSourceOffset + GetTransferScatterOffset(i);
+            int slotIndex = Mathf.Max(0, (stackCount - 1) - i);
+            Vector3 end = GetStackSlotWorldPosition(resource, binding, slotIndex);
+            SpawnTransfer(resource, start, end, stackRotation, stackRotation, true, resource, binding, slotIndex);
+        }
+    }
+
+    // 플레이어 적재 위치에서 월드 목표 지점으로 이동하는 연출
+    public void PlayOutgoingTransfer(ResourceData resource, Vector3 targetWorldPosition, int amount)
+    {
+        if (!TryGetBinding(resource, out CarryBinding binding))
+            return;
+
+        Quaternion stackRotation = PlayerCarrySwayCalculator.GetHorizontalRotation(binding.StackRoot);
+        int stackCount = Mathf.Max(0, _resourceStack.GetCount(resource));
+        int count = Mathf.Max(1, amount);
+        for (int i = 0; i < count; i++)
+        {
+            int slotIndex = stackCount + i;
+            Vector3 start = GetStackSlotWorldPosition(resource, binding, slotIndex);
+            Vector3 end = targetWorldPosition + GetTransferScatterOffset(i);
+            SpawnTransfer(resource, start, end, stackRotation, stackRotation, false, resource, binding, slotIndex);
+        }
     }
 
     // ResourceStack.Changed 콜백 — 변경된 자원만 동기화
@@ -164,6 +234,127 @@ public class PlayerCarryVisualizer : MonoBehaviour
 
             view.transform.SetPositionAndRotation(pos + layerSway, stackRotation);
         }
+    }
+
+    private void SpawnTransfer(
+        ResourceData resource,
+        Vector3 start,
+        Vector3 end,
+        Quaternion startRotation,
+        Quaternion endRotation,
+        bool followEnd,
+        ResourceData followResource,
+        CarryBinding followBinding,
+        int followSlotIndex)
+    {
+        if (resource == null || resource.WorldViewPrefab == null)
+            return;
+
+        GameObject view = PooledViewBridge.Spawn(resource.WorldViewPrefab, start, startRotation, null, true);
+        if (view == null)
+            return;
+
+        float distance = Vector3.Distance(start, end);
+        float duration = distance / Mathf.Max(MinTransferMoveSpeed, _transferMoveSpeed);
+        _transferFlights.Add(new TransferFlight
+        {
+            View = view,
+            Start = start,
+            End = end,
+            Duration = Mathf.Max(0.05f, duration),
+            Elapsed = 0f,
+            StartRotation = startRotation,
+            EndRotation = endRotation,
+            FollowEnd = followEnd,
+            Resource = followResource,
+            Binding = followBinding,
+            SlotIndex = followSlotIndex,
+        });
+    }
+
+    // 비행 중인 이펙트 뷰 위치 갱신
+    private void UpdateTransferFlights()
+    {
+        for (int i = _transferFlights.Count - 1; i >= 0; i--)
+        {
+            TransferFlight flight = _transferFlights[i];
+            if (flight == null || flight.View == null)
+            {
+                _transferFlights.RemoveAt(i);
+                continue;
+            }
+
+            if (flight.FollowEnd && flight.Binding != null && flight.Resource != null)
+                flight.End = GetStackSlotWorldPosition(flight.Resource, flight.Binding, flight.SlotIndex);
+
+            flight.Elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(flight.Elapsed / flight.Duration);
+
+            Vector3 previousPosition = flight.View.transform.position;
+            Vector3 position = Vector3.Lerp(flight.Start, flight.End, t);
+            position.y += Mathf.Sin(t * Mathf.PI) * _transferArcHeight;
+            flight.View.transform.position = position;
+            UpdateTransferRotation(flight, previousPosition, position, t);
+
+            if (t < 1f)
+                continue;
+
+            PooledViewBridge.Release(flight.View);
+            _transferFlights.RemoveAt(i);
+        }
+    }
+
+    private bool TryGetBinding(ResourceData resource, out CarryBinding binding)
+    {
+        binding = null;
+        if (resource == null || _config == null)
+            return false;
+
+        return _config.BindingByResource.TryGetValue(resource, out binding) && binding != null && binding.StackRoot != null;
+    }
+
+    private Vector3 GetStackSlotWorldPosition(ResourceData resource, CarryBinding binding, int slotIndex)
+    {
+        int safeIndex = Mathf.Max(0, slotIndex);
+        Vector3 position = TryGetOverrideWorldPosition(resource, binding, safeIndex, out Vector3 overridePosition)
+            ? overridePosition
+            : binding.StackRoot.TransformPoint(binding.LocalOffset + Vector3.up * (binding.VerticalSpacing * safeIndex));
+
+        if (_sway != null)
+            position += _sway.GetLayerSway(binding.VerticalSpacing, safeIndex);
+
+        return position;
+    }
+
+    private void UpdateTransferRotation(TransferFlight flight, Vector3 previousPosition, Vector3 currentPosition, float t)
+    {
+        Vector3 horizontalDirection = currentPosition - previousPosition;
+        horizontalDirection.y = 0f;
+
+        if (horizontalDirection.sqrMagnitude < 0.0001f)
+        {
+            horizontalDirection = flight.End - flight.Start;
+            horizontalDirection.y = 0f;
+        }
+
+        Quaternion travelRotation = horizontalDirection.sqrMagnitude > 0.0001f
+            ? Quaternion.LookRotation(horizontalDirection.normalized, Vector3.up)
+            : flight.EndRotation;
+
+        Quaternion stackRotation = Quaternion.Slerp(flight.StartRotation, flight.EndRotation, t);
+        Quaternion targetRotation = Quaternion.Slerp(travelRotation, stackRotation, 0.35f);
+        float rotationLerp = Mathf.Clamp01(Time.deltaTime * TransferRotationFollowSpeed);
+        flight.View.transform.rotation = Quaternion.Slerp(flight.View.transform.rotation, targetRotation, rotationLerp);
+    }
+
+    private Vector3 GetTransferScatterOffset(int index)
+    {
+        if (_transferScatter <= 0f || index <= 0)
+            return Vector3.zero;
+
+        float angle = index * 2.3999631f;
+        float radius = _transferScatter * (1f + (index % 3) * 0.2f);
+        return new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
     }
 
     // Money 뷰 위치를 Ore 스택 루트 기준으로 오버라이드

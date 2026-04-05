@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     [SerializeField] private PlayerView _view;
     [SerializeField] private EquipBase _equip;
     [SerializeField] private ResourceStack _resourceStack;
+    [SerializeField] private PlayerCarryVisualizer _carryVisualizer;
     [SerializeField] private ResourceManager _resourceManager;
 
     [Header("Mine")]
@@ -35,6 +36,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
 
     public EquipBase Equip => _equip;
     public ResourceStack CarryStack => _resourceStack;
+    public PlayerCarryVisualizer CarryVisualizer => _carryVisualizer;
     public Vector2 LastMoveInput => _lastMoveInput;
     public float SubmitTickInterval => Mathf.Max(0f, _transferTickInterval);
     public int SubmitAmountPerTick => Mathf.Max(1, _transferAmountPerTick);
@@ -47,6 +49,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
         if (_view == null) _view = GetComponent<PlayerView>();
         if (_equip == null) _equip = GetComponent<EquipBase>();
         if (_resourceStack == null) _resourceStack = GetComponent<ResourceStack>();
+        if (_carryVisualizer == null) _carryVisualizer = GetComponent<PlayerCarryVisualizer>();
         if (_resourceManager == null) throw new InvalidOperationException("[PlayerController] _resourceManager is required.");
 
         BindActions();
@@ -163,12 +166,15 @@ public class PlayerController : MonoBehaviour, IInteractionActor
         if (!depleted || yieldResource == null || yieldAmount <= 0)
             return;
 
-        TryAddCarriedResource(yieldResource, yieldAmount);
+        if (!TryAddCarriedResource(yieldResource, yieldAmount, out int added))
+            return;
+
+        _carryVisualizer.PlayIncomingTransfer(yieldResource, mine.transform.position, added);
     }
 
     // 채굴 산출 자원을 스택에 적재
-    private bool TryAddCarriedResource(ResourceData resource, int amount)
+    private bool TryAddCarriedResource(ResourceData resource, int amount, out int added)
     {
-        return _resourceStack.TryAdd(resource, amount, out int added) && added > 0;
+        return _resourceStack.TryAdd(resource, amount, out added) && added > 0;
     }
 }

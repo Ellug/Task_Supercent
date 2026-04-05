@@ -36,6 +36,7 @@ public class InteractionZone : MonoBehaviour
     [SerializeField] private InteractionZoneRuntimeState _runtime = new();
 
     private IInteractionActor _actorInZone;
+    private Collider _zoneCollider;
     private float _nextTickTime;
 
     public InteractionZoneId ZoneId => _zoneId;
@@ -58,9 +59,9 @@ public class InteractionZone : MonoBehaviour
 
     void Awake()
     {
-        Collider zoneCollider = GetComponent<Collider>();
-        if (!zoneCollider.isTrigger)
-            zoneCollider.isTrigger = true;
+        _zoneCollider = GetComponent<Collider>();
+        if (!_zoneCollider.isTrigger)
+            _zoneCollider.isTrigger = true;
 
         if (_applyLibraryOnAwake && _library != null)
         {
@@ -219,10 +220,12 @@ public class InteractionZone : MonoBehaviour
             InteractionZoneActionController.GetAmountPerTick(_type, actor, _amountPerTick),
             GetPurchaseRequiredAmount(),
             _purchaseEquip,
-            out _);
+            out int movedAmount);
 
         if (!success)
             return;
+
+        TryPlayTransferVisual(actor, movedAmount);
 
         if (!_runtime.Started)
         {
@@ -271,5 +274,36 @@ public class InteractionZone : MonoBehaviour
     private void NotifyStateChanged()
     {
         StateChanged?.Invoke(this);
+    }
+
+    // 플레이어 자원 이동 연출 트리거
+    private void TryPlayTransferVisual(IInteractionActor actor, int movedAmount)
+    {
+        if (movedAmount <= 0 || _resource == null)
+            return;
+
+        if (_type != InteractionZoneType.Submit && _type != InteractionZoneType.Collect)
+            return;
+
+        if (actor is not PlayerController player || player.CarryVisualizer == null)
+            return;
+
+        Vector3 zonePoint = GetTransferWorldPoint();
+        if (_type == InteractionZoneType.Submit)
+        {
+            player.CarryVisualizer.PlayOutgoingTransfer(_resource, zonePoint, movedAmount);
+            return;
+        }
+
+        player.CarryVisualizer.PlayIncomingTransfer(_resource, zonePoint, movedAmount);
+    }
+
+    private Vector3 GetTransferWorldPoint()
+    {
+        if (_zoneCollider == null)
+            return transform.position;
+
+        Bounds bounds = _zoneCollider.bounds;
+        return bounds.center + Vector3.up * (bounds.extents.y + 0.1f);
     }
 }

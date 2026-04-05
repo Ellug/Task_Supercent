@@ -7742,6 +7742,11 @@ PrefabInstance:
       propertyPath: _bounceStrength
       value: 0.008
       objectReference: {fileID: 0}
+    - target: {fileID: 665500000000000003, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _transferMoveSpeed
+      value: 48
+      objectReference: {fileID: 0}
     - target: {fileID: 2426179924602204107, guid: 85272274d7616a5409a713712c4b47ad,
         type: 3}
       propertyPath: _moveSpeed

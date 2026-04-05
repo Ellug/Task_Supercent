@@ -55,8 +55,6 @@ public class InteractionZone : MonoBehaviour
     public event Action<InteractionZone> Started;
     public event Action<InteractionZone> Completed;
     public event Action<InteractionZone> StateChanged;
-    public event Action<IInteractionActor, ResourceData, int> ResourceSubmitted;
-    public event Action<IInteractionActor, ResourceData, int> ResourceCollected;
 
     void Awake()
     {
@@ -65,9 +63,12 @@ public class InteractionZone : MonoBehaviour
             zoneCollider.isTrigger = true;
 
         if (_applyLibraryOnAwake && _library != null)
+        {
             ApplyLibrary(_library, true);
+            return;
+        }
 
-        EnsureRuntimeState();
+        _runtime.ResetProgress(_storedAmount);
         NotifyStateChanged();
     }
 
@@ -89,7 +90,7 @@ public class InteractionZone : MonoBehaviour
         if (Time.time < _nextTickTime)
             return;
 
-        _nextTickTime = Time.time + GetEffectiveTickInterval(_actorInZone);
+        _nextTickTime = Time.time + InteractionZoneRuleController.GetTickInterval(_type, _actorInZone);
         TryProcessInteraction(_actorInZone);
     }
 
@@ -152,7 +153,6 @@ public class InteractionZone : MonoBehaviour
     // 진행 상태 초기화
     public void ResetProgress()
     {
-        EnsureRuntimeState();
         _runtime.ResetProgress(_storedAmount);
         _nextTickTime = 0f;
         _actorInZone = null;
@@ -179,7 +179,6 @@ public class InteractionZone : MonoBehaviour
 
         if (resetProgress)
         {
-            EnsureRuntimeState();
             _runtime.ResetProgress(_storedAmount);
         }
 
@@ -199,7 +198,7 @@ public class InteractionZone : MonoBehaviour
         _type = InteractionZoneType.PurchaseEquip;
         _resource = costResource;
         _amountPerTick = Mathf.Max(1, amountPerTick);
-        _completeAmount = Mathf.Max(0, requiredAmount);
+        _completeAmount = 0;
         _storedAmount = 0;
         _purchaseEquip = purchaseEquip;
         _priceOverride = Mathf.Max(1, requiredAmount);
@@ -215,28 +214,18 @@ public class InteractionZone : MonoBehaviour
     // 타입에 맞는 인터랙션 실행 — 최초 성공 시 Started 이벤트, 완료 조건 충족 시 CompleteZone
     private void TryProcessInteraction(IInteractionActor actor)
     {
-        int submittedAmount = 0;
-        int collectedAmount = 0;
         bool success = InteractionZoneActionProcessor.TryProcess(
             _type,
             actor,
             _runtime,
             _resource,
-            GetEffectiveAmountPerTick(actor),
+            InteractionZoneRuleController.GetAmountPerTick(_type, actor, _amountPerTick),
             GetPurchaseRequiredAmount(),
             _purchaseEquip,
-            out int movedAmount);
+            out _);
 
         if (!success)
             return;
-
-        if (movedAmount > 0)
-        {
-            if (_type == InteractionZoneType.SubmitResource)
-                submittedAmount = movedAmount;
-            else if (_type == InteractionZoneType.CollectResource)
-                collectedAmount = movedAmount;
-        }
 
         SyncStoredAmountField();
 
@@ -246,73 +235,19 @@ public class InteractionZone : MonoBehaviour
             Started?.Invoke(this);
         }
 
-        if (submittedAmount > 0)
-            ResourceSubmitted?.Invoke(actor, _resource, submittedAmount);
-
-        if (collectedAmount > 0)
-            ResourceCollected?.Invoke(actor, _resource, collectedAmount);
-
-        if (ShouldComplete(actor))
+        if (InteractionZoneRuleController.ShouldComplete(
+            _completeOnce,
+            _type,
+            _runtime,
+            GetPurchaseRequiredAmount(),
+            _purchaseEquip,
+            _completeAmount,
+            actor))
+        {
             CompleteZone();
+        }
         else
             NotifyStateChanged();
-    }
-
-    // 타입별 틱 간격 반환 — Collect는 CollectTickInterval, 나머지는 SubmitTickInterval
-    private float GetEffectiveTickInterval(IInteractionActor actor)
-    {
-        if (_type == InteractionZoneType.CollectResource)
-            return actor.CollectTickInterval;
-
-        return actor.SubmitTickInterval;
-    }
-
-    // 타입별 틱당 처리량 반환 — 액터 없으면 _amountPerTick 폴백
-    private int GetEffectiveAmountPerTick(IInteractionActor actor)
-    {
-        if (actor != null)
-        {
-            if (_type == InteractionZoneType.PurchaseEquip)
-                return actor.SubmitAmountPerTick;
-
-            if (_type == InteractionZoneType.SubmitResource)
-                return actor.SubmitAmountPerTick;
-
-            if (_type == InteractionZoneType.CollectResource)
-                return actor.CollectAmountPerTick;
-        }
-
-        return Mathf.Max(1, _amountPerTick);
-    }
-
-    // 타입별 완료 조건 판단
-    private bool ShouldComplete(IInteractionActor actor)
-    {
-        if (!_completeOnce)
-            return false;
-
-        switch (_type)
-        {
-            case InteractionZoneType.PurchaseEquip:
-            {
-                if (_runtime.StoredAmount < GetPurchaseRequiredAmount())
-                    return false;
-
-                if (_purchaseEquip == null)
-                    return true;
-
-                return actor != null && actor.HasEquipOrBetter(_purchaseEquip);
-            }
-            case InteractionZoneType.SubmitResource:
-                return _completeAmount > 0 && _runtime.ProcessedAmount >= _completeAmount;
-            case InteractionZoneType.CollectResource:
-                if (_completeAmount > 0)
-                    return _runtime.ProcessedAmount >= _completeAmount;
-
-                return _runtime.StoredAmount <= 0;
-            default:
-                return false;
-        }
     }
 
     // priceOverride → completeAmount 순으로 구매 필요 금액 결정
@@ -343,18 +278,9 @@ public class InteractionZone : MonoBehaviour
         StateChanged?.Invoke(this);
     }
 
-    // _runtime이 null이면 새로 생성 후 초기화
-    private void EnsureRuntimeState()
-    {
-        _runtime ??= new InteractionZoneRuntimeState();
-
-        _runtime.ResetProgress(_storedAmount);
-    }
-
     // 직렬화 필드 _storedAmount를 런타임 상태와 동기화
     private void SyncStoredAmountField()
     {
         _storedAmount = _runtime.StoredAmount;
     }
 }
-

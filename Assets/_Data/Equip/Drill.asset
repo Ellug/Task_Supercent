@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: Drill
   m_EditorClassIdentifier: 
   _id: drill_lv2
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 88a31c43bedbb6649b25d1680515188d, type: 3}
   _playerViewPrefab: {fileID: 200100000000000001, guid: beb3fb34fc7742f9927f488cf9b95530,
     type: 3}
-  _price: 300
   _mineRange: 5
   _mineInterval: 0.2
   _simultaneousMineCount: 1

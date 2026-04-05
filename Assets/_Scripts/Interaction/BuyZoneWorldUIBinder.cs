@@ -25,19 +25,14 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
 
     void OnEnable()
     {
-        if (_zone == null)
-            _zone = GetComponent<InteractionZone>();
-
-        if (_zone != null)
-            _zone.StateChanged += OnZoneStateChanged;
+        _zone.StateChanged += OnZoneStateChanged;
 
         Refresh();
     }
 
     void OnDisable()
     {
-        if (_zone != null)
-            _zone.StateChanged -= OnZoneStateChanged;
+        _zone.StateChanged -= OnZoneStateChanged;
     }
 
     private void OnZoneStateChanged(InteractionZone zone)
@@ -56,7 +51,7 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
 
         if (_amountText != null)
         {
-            _amountText.text = InteractionZoneUIPresenter.BuildAmountText(
+            _amountText.text = InteractionZoneUI.BuildAmountText(
                 _zone.Type,
                 _zone.StoredAmount,
                 _zone.ProcessedAmount,
@@ -65,6 +60,6 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
         }
 
         if (_iconImage != null)
-            _iconImage.sprite = InteractionZoneUIPresenter.ResolveIconSprite(_zone.Type, _zone.Resource, _zone.PurchaseEquip);
+            _iconImage.sprite = InteractionZoneUI.ResolveIconSprite(_zone.Type, _zone.Resource, _zone.PurchaseEquip);
     }
 }

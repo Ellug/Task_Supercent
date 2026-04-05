@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: Bulldozer
   m_EditorClassIdentifier: 
   _id: bulldozer_lv3
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: e71b7f589d61cb54f91f91e2ddfbcfc2, type: 3}
   _playerViewPrefab: {fileID: 300100000000000001, guid: bbc4f44ba3484d0998c6af68e5700caf,
     type: 3}
-  _price: 900
   _mineRange: 7
   _mineInterval: 0.1
   _simultaneousMineCount: 3

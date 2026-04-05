@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public static class InteractionZoneUIPresenter
+public static class InteractionZoneUI
 {
     // 타입별 수량 표시 문자열 반환
     public static string BuildAmountText(InteractionZoneType type, int storedAmount, int processedAmount, int completeAmount, int purchaseRequiredAmount)

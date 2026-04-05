@@ -257,22 +257,11 @@ MonoBehaviour:
   _library: {fileID: 11400000, guid: 3aa040860ef74bedaae6fd411534d805, type: 2}
   _applyLibraryOnAwake: 1
   _zoneId: 2
-  _type: 0
-  _zoneEnabled: 1
-  _completeOnce: 1
-  _tickInterval: 0.2
-  _requirePlayerIdle: 1
-  _stopSpeedThreshold: 0.05
-  _resource: {fileID: 11400000, guid: 9d2d67b42a1f4c07a3c4d9b9c4f8e1a2, type: 2}
-  _amountPerTick: 1
-  _completeAmount: 1
-  _storedAmount: 0
-  _purchaseEquip: {fileID: 11400000, guid: ad62147f97ef44e4876b1a2b8b247f69, type: 2}
-  _priceOverride: 50
-  _onFirstInteraction: []
-  _onCompleted: []
-  _amountText: {fileID: 6894709763741951744}
-  _iconImage: {fileID: 8944158041478008294}
+  _runtime:
+    _started: 0
+    _completed: 0
+    _processedAmount: 0
+    _storedAmount: 0
 --- !u!114 &410000000000000555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -288,6 +277,7 @@ MonoBehaviour:
   _zone: {fileID: 410000000000000001}
   _amountText: {fileID: 6894709763741951744}
   _iconImage: {fileID: 8944158041478008294}
+  _fillImage: {fileID: 4566712995378814707}
   _buyZoneOnly: 1
 --- !u!1 &3534860208971587151
 GameObject:

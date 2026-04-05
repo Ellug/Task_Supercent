@@ -26,6 +26,23 @@ public static class InteractionZoneUI
         }
     }
 
+    // (총개수 - 남은개수) / 총개수 = storedAmount / purchaseRequiredAmount
+    public static float BuildFillAmount(InteractionZoneType type, int storedAmount, int purchaseRequiredAmount)
+    {
+        if (!IsBuyType(type))
+            return 0f;
+
+        int total = Mathf.Max(1, purchaseRequiredAmount);
+        return Mathf.Clamp01((float)storedAmount / total);
+    }
+
+    private static bool IsBuyType(InteractionZoneType type)
+    {
+        return type == InteractionZoneType.BuyEquip
+            || type == InteractionZoneType.BuyNpc
+            || type == InteractionZoneType.ExpandJail;
+    }
+
     // 타입별 아이콘 스프라이트 반환
     public static Sprite ResolveIconSprite(InteractionZoneType type, ResourceData resource, EquipData purchaseEquip, Sprite displayIcon)
     {

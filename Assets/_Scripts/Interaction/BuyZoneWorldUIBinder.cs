@@ -13,6 +13,7 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
     [Header("Inject To UI (Optional)")]
     [SerializeField] private TMP_Text _amountText;
     [SerializeField] private Image _iconImage;
+    [SerializeField] private Image _fillImage;
 
     [Header("Rule")]
     [SerializeField] private bool _buyZoneOnly = true;
@@ -61,5 +62,8 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
 
         if (_iconImage != null)
             _iconImage.sprite = InteractionZoneUI.ResolveIconSprite(_zone.Type, _zone.Resource, _zone.PurchaseEquip, _zone.DisplayIcon);
+
+        if (_fillImage != null)
+            _fillImage.fillAmount = InteractionZoneUI.BuildFillAmount(_zone.Type, _zone.StoredAmount, _zone.PurchaseRequiredAmount);
     }
 }

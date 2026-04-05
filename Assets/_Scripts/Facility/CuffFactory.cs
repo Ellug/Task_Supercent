@@ -5,6 +5,13 @@ using UnityEngine;
 // InputZone에 쌓인 광석을 버퍼에 적재하고, 인터벌마다 1개씩 쇠고랑으로 변환해 CollectZone에 적재
 public class CuffFactory : FacilityBase
 {
+    private const int ProduceConsumeAmountPerCycle = 1;
+    private const float ProduceIntervalSeconds = 0.5f;
+
+    [Header("Capacity")]
+    [SerializeField, Min(1)] private int _submitMaxCapacity = 50;
+    [SerializeField, Min(1)] private int _collectMaxCapacity = 50;
+
     [Header("Ore Buffer")]
     [SerializeField] private Transform _oreStackRoot;
     [SerializeField] private ResourceData _oreResource;
@@ -16,15 +23,30 @@ public class CuffFactory : FacilityBase
     [SerializeField] private InteractionZone _collectZone;
     [SerializeField] private ResourceData _cuffResource;
     [SerializeField] private Transform _collectStackRoot;
-    [SerializeField, Min(0.01f)] private float _produceInterval = 0.15f;
     [SerializeField, Min(0f)] private float _collectColumnSpacing = 0.45f;
     [SerializeField, Min(0f)] private float _collectLayerSpacing = 0.2f;
     [SerializeField] private Vector3 _collectLocalOffset = new(0f, 0.1f, 0f);
     [SerializeField, Min(1)] private int _collectColumns = 1;
 
+    [Header("Cuff Rail")]
+    [SerializeField] private Transform _spawnPoint;
+    [SerializeField] private Transform _pathway;
+    [SerializeField] private Transform _endpoint;
+    [SerializeField, Min(0.1f)] private float _railMoveSpeed = 3f;
+
+    [Header("Max Label")]
+    [SerializeField] private GameObject _maxTextPrefab;
+    [SerializeField] private Vector3 _submitMaxLabelOffset = new(0f, 2f, 0f);
+    [SerializeField] private Vector3 _collectMaxLabelOffset = new(0f, 2f, 0f);
+
     private FacilityStackViewRuntime _oreInputViews;
     private FacilityZoneOutputRuntime _cuffOutputRuntime;
     private FacilityTimedProductionRuntime _productionRuntime;
+    private CuffRailRuntime _railRuntime;
+    private FacilityZoneCapacityRuntime _submitZoneCapacityRuntime;
+    private FacilityZoneCapacityRuntime _collectZoneCapacityRuntime;
+    private FacilityMaxLabelRuntime _submitMaxLabelRuntime;
+    private FacilityMaxLabelRuntime _collectMaxLabelRuntime;
 
     public InteractionZone CollectZone => _collectZone;
 
@@ -64,13 +86,52 @@ public class CuffFactory : FacilityBase
             Vector3.zero);
 
         _cuffOutputRuntime = new FacilityZoneOutputRuntime(_collectZone, cuffOutputViews);
-        _productionRuntime = new FacilityTimedProductionRuntime(_produceInterval);
+        _productionRuntime = new FacilityTimedProductionRuntime(ProduceIntervalSeconds);
+        _submitZoneCapacityRuntime = new FacilityZoneCapacityRuntime(InputZone, _submitMaxCapacity, true);
+        _collectZoneCapacityRuntime = new FacilityZoneCapacityRuntime(_collectZone, _collectMaxCapacity, false);
+
+        if (_spawnPoint != null && _pathway != null && _endpoint != null)
+        {
+            _railRuntime = new CuffRailRuntime(
+                this,
+                _spawnPoint,
+                _pathway,
+                _endpoint,
+                _cuffResource,
+                _railMoveSpeed);
+        }
+
+        _submitMaxLabelRuntime = new FacilityMaxLabelRuntime(_maxTextPrefab, InputZone.transform, _submitMaxLabelOffset);
+        _collectMaxLabelRuntime = new FacilityMaxLabelRuntime(_maxTextPrefab, _collectZone.transform, _collectMaxLabelOffset);
     }
 
     void LateUpdate()
     {
+        _submitZoneCapacityRuntime.Tick();
+        _collectZoneCapacityRuntime.Tick();
+
+        bool submitFull = _submitZoneCapacityRuntime.IsFull;
+        bool collectFull = _collectZoneCapacityRuntime.IsFull;
+
+        _submitMaxLabelRuntime.SetVisible(submitFull);
+        _collectMaxLabelRuntime.SetVisible(collectFull);
+
         _cuffOutputRuntime.SyncVisuals();
-        _productionRuntime.TryConvert(_oreInputViews, _cuffOutputRuntime, 1, 1);
+
+        // Collect가 MAX면 생산 중단
+        if (collectFull)
+            return;
+
+        // 레일이 없으면 기존처럼 바로 CollectZone에 적재
+        if (_railRuntime == null)
+        {
+            _productionRuntime.TryConvert(_oreInputViews, _cuffOutputRuntime, ProduceConsumeAmountPerCycle, 1);
+            return;
+        }
+
+        // 레일이 있으면 생산 시 뷰를 레일에 올리고, endpoint 도달 시 CollectZone 적재
+        if (_productionRuntime.TryConsume(_oreInputViews, ProduceConsumeAmountPerCycle))
+            _railRuntime.Launch(() => _cuffOutputRuntime.Add(ProduceConsumeAmountPerCycle));
     }
 
     // 스폰된 뷰 오브젝트 전체 반환
@@ -78,9 +139,17 @@ public class CuffFactory : FacilityBase
     {
         _oreInputViews?.Dispose();
         _cuffOutputRuntime?.Dispose();
+        _submitZoneCapacityRuntime?.Dispose();
+        _collectZoneCapacityRuntime?.Dispose();
+        _submitMaxLabelRuntime?.Dispose();
+        _collectMaxLabelRuntime?.Dispose();
         _oreInputViews = null;
         _cuffOutputRuntime = null;
         _productionRuntime = null;
+        _submitZoneCapacityRuntime = null;
+        _collectZoneCapacityRuntime = null;
+        _submitMaxLabelRuntime = null;
+        _collectMaxLabelRuntime = null;
     }
 
     // 광석 자원만 소비 가능하며, 뷰 프리팹이 있어야 함
@@ -92,6 +161,9 @@ public class CuffFactory : FacilityBase
     // 현재 버퍼에 적재 가능한 광석 수량 반환
     protected override int GetRemainingCapacity(ResourceData resource)
     {
+        if (_collectZoneCapacityRuntime != null && _collectZoneCapacityRuntime.IsFull)
+            return 0;
+
         return int.MaxValue;
     }
 
@@ -110,9 +182,10 @@ public class CuffFactory : FacilityBase
         if (resource != null && resource != _oreResource)
             return 0;
 
-        int submitAmount = Mathf.Max(1, amount);
-        InputZone.AddStoredAmount(submitAmount);
-        return submitAmount;
+        if (_submitZoneCapacityRuntime == null)
+            return 0;
+
+        return _submitZoneCapacityRuntime.TryAdd(amount);
     }
 
     private void ValidateResourceBindingsOrThrow()

@@ -17,6 +17,17 @@ public sealed class FacilityTimedProductionRuntime
         int consumeAmountPerTick,
         int producePerConsume)
     {
+        if (!TryConsume(inputViews, consumeAmountPerTick))
+            return false;
+
+        int produceAmount = Mathf.Max(1, consumeAmountPerTick) * Mathf.Max(1, producePerConsume);
+        outputZone.Add(produceAmount);
+        return true;
+    }
+
+    // 인터벌마다 입력 스택에서 소비만 수행 — 출력은 호출자가 처리
+    public bool TryConsume(FacilityStackViewRuntime inputViews, int consumeAmountPerTick)
+    {
         if (Time.time < _nextTime)
             return false;
 
@@ -27,11 +38,6 @@ public sealed class FacilityTimedProductionRuntime
             return false;
 
         int removed = inputViews.Remove(consumeAmount);
-        if (removed <= 0)
-            return false;
-
-        int produceAmount = removed * Mathf.Max(1, producePerConsume);
-        outputZone.Add(produceAmount);
-        return true;
+        return removed > 0;
     }
 }

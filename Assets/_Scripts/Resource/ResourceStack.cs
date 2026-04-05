@@ -16,8 +16,17 @@ public class ResourceStack : MonoBehaviour
         if (resource == null)
             return;
 
+        int clampedCapacity = Mathf.Max(0, capacity);
+
+        if (_countByResource.TryGetValue(resource, out int currentCount))
+        {
+            _capacityByResource[resource] = clampedCapacity;
+            _countByResource[resource] = Mathf.Min(currentCount, clampedCapacity);
+            return;
+        }
+
         _countByResource[resource] = 0;
-        _capacityByResource[resource] = Mathf.Max(0, capacity);
+        _capacityByResource[resource] = clampedCapacity;
     }
 
     // 현재 적재 수량 반환

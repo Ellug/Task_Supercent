@@ -43,6 +43,15 @@ public class JailFacility : MonoBehaviour
         LogState("Init");
     }
 
+    void OnDisable()
+    {
+        if (_doorCoroutine != null)
+        {
+            StopCoroutine(_doorCoroutine);
+            _doorCoroutine = null;
+        }
+    }
+
     // 입구에서 내부 이동할 1명 예약
     public bool TryAcquireEntrance(Prisoner prisoner)
     {

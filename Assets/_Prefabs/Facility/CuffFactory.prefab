@@ -315,6 +315,99 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &2573929174898300416
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4148351347107128375}
+  m_Layer: 0
+  m_Name: EndPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4148351347107128375
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2573929174898300416}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -8.775, y: 1.5, z: -2.222}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7784421831138484913}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5020973566901580135
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5430258289407015717}
+  m_Layer: 0
+  m_Name: PathWay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5430258289407015717
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5020973566901580135}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -8.775, y: 1.5, z: 0.028}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7784421831138484913}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &9084337959528302552
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7922265044081885236}
+  m_Layer: 0
+  m_Name: SpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7922265044081885236
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9084337959528302552}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.775, y: 1.5, z: 0.028}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7784421831138484913}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9196110297298770528
 GameObject:
   m_ObjectHideFlags: 0
@@ -350,6 +443,9 @@ Transform:
   - {fileID: 528104764529323226}
   - {fileID: 7768317832385299371}
   - {fileID: 3023016085561477058}
+  - {fileID: 7922265044081885236}
+  - {fileID: 5430258289407015717}
+  - {fileID: 4148351347107128375}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &410000000000000123
@@ -367,11 +463,8 @@ MonoBehaviour:
   _inputZone: {fileID: 4559565953785167099}
   _consumeInterval: 0.03
   _consumeAmountPerTick: 5
-  _embeddedInputZone: {fileID: 4559565953785167099}
-  _embeddedCollectZone: {fileID: 9042005284013471890}
   _oreStackRoot: {fileID: 7768317832385299371}
   _oreResource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
-  _maxBufferedOre: 999
   _oreColumnSpacing: 0.75
   _oreLayerSpacing: 0.35
   _oreLocalOffset: {x: 0, y: 0.2, z: 0}
@@ -379,12 +472,14 @@ MonoBehaviour:
   _cuffResource: {fileID: 11400000, guid: f0b6a9f611784ac28ca98f5e6219d2d0, type: 2}
   _collectStackRoot: {fileID: 3023016085561477058}
   _produceInterval: 0.15
-  _maxCollectStored: 240
   _collectColumnSpacing: 0.45
   _collectLayerSpacing: 0.2
   _collectLocalOffset: {x: 0, y: 0.1, z: 0}
   _collectColumns: 1
-  _disableSpawnedColliders: 1
+  _spawnPoint: {fileID: 7922265044081885236}
+  _pathway: {fileID: 5430258289407015717}
+  _endpoint: {fileID: 4148351347107128375}
+  _railMoveSpeed: 3
 --- !u!1001 &4248664388136697082
 PrefabInstance:
   m_ObjectHideFlags: 0

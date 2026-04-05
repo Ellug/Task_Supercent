@@ -23,8 +23,8 @@ public static class PooledViewBridge
             if (pooledTransform != null)
             {
                 GameObject pooledView = pooledTransform.gameObject;
-                if (parent != null)
-                    pooledView.transform.SetParent(parent, worldPositionStays);
+                bool keepWorldPosition = parent == null || worldPositionStays;
+                pooledView.transform.SetParent(parent, keepWorldPosition);
 
                 return pooledView;
             }

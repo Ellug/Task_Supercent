@@ -190,24 +190,16 @@ public static class InteractionZoneActionController
         return true;
     }
 
-    // costResource가 있으면 캐리 스택에서, 없으면 소지금에서 비용 차감
+    // costResource를 캐리 스택에서 차감
     private static bool TryDepositCost(ResourceStack carryStack, ResourceData costResource, int amount, out int paidAmount)
     {
         paidAmount = 0;
         int clampedAmount = Mathf.Max(1, amount);
 
-        if (costResource != null)
-            return carryStack != null && carryStack.TryRemove(costResource, clampedAmount, out paidAmount);
-
-        ResourceManager resourceManager = ResourceManager.Instance;
-        if (resourceManager == null)
+        if (costResource == null || carryStack == null)
             return false;
 
-        if (!resourceManager.TrySpendMoney(clampedAmount))
-            return false;
-
-        paidAmount = clampedAmount;
-        return true;
+        return carryStack.TryRemove(costResource, clampedAmount, out paidAmount);
     }
 }
 

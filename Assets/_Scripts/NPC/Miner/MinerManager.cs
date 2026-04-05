@@ -19,6 +19,7 @@ public class MinerManager : MonoBehaviour
 
     [Header("Submit")]
     [SerializeField] private GameObject _cuffFactoryObject;
+    [SerializeField] private ResourceManager _resourceManager;
 
     private readonly List<Miner> _miners = new();
     private readonly Dictionary<Miner, Mine> _mineByMiner = new();
@@ -69,11 +70,10 @@ public class MinerManager : MonoBehaviour
 
         ReleaseMine(miner);
 
-        ResourceManager resourceManager = ResourceManager.Instance;
-        if (resourceManager == null)
+        if (_resourceManager == null)
             return false;
 
-        resourceManager.GetActiveMines(_activeMines);
+        _resourceManager.GetActiveMines(_activeMines);
 
         float bestDistanceSqr = float.MaxValue;
         for (int i = 0; i < _activeMines.Count; i++)
@@ -181,6 +181,9 @@ public class MinerManager : MonoBehaviour
 
         if (_cuffFactoryObject == null || _cuffFactory == null)
             throw new InvalidOperationException("[MinerManager] _cuffFactoryObject with CuffFactory is required.");
+
+        if (_resourceManager == null)
+            throw new InvalidOperationException("[MinerManager] _resourceManager is required.");
     }
 
     private Vector3 GetSpawnBasePosition()

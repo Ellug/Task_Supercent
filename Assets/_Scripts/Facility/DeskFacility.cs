@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
-// Desk 시설: Submit Zone으로 들어온 Cuff를 입력 스택으로 적재
-// Prisoner 지급은 Prisoner별 int 카운트로만 관리
+// Desk 시설: Submit Cuff를 버퍼에 적재하고 Prisoner에게 지급
+// Prisoner 통과 보상 Money는 CollectZone에 적재하고 시각화
 public class DeskFacility : FacilityBase
 {
     [Header("Cuff Buffer")]
@@ -26,49 +25,74 @@ public class DeskFacility : FacilityBase
     [SerializeField] private Vector3 _collectLocalOffset = new(0f, 0.08f, 0f);
     [SerializeField] private Vector3 _moneyViewEulerAngles = new(0f, 45f, 0f);
 
-    private readonly List<GameObject> _cuffViews = new();
-    private readonly List<GameObject> _moneyViews = new();
-    private Prisoner _supplyTarget;
-    private int _curCuff;
-    private BoxCollider _collectZoneCollider;
+    private DeskPrisonerSupplyRuntime _prisonerSupplyRuntime;
+    private FacilityZoneOutputRuntime _moneyOutputRuntime;
 
-    public int BufferedCuffCount => _cuffViews.Count;
+    public int BufferedCuffCount => _prisonerSupplyRuntime != null ? _prisonerSupplyRuntime.BufferedCount : 0;
     public int MaxCuffPerPrisoner => Mathf.Max(1, _maxCuffPerPrisoner);
-    public int CurCuff => _curCuff;
+    public int CurCuff => _prisonerSupplyRuntime != null ? _prisonerSupplyRuntime.CurrentCuff : 0;
     public InteractionZone CollectZone => _collectZone;
 
     protected override void Awake()
     {
         base.Awake();
         ValidateBindingsOrThrow();
-        _collectZoneCollider = _collectZone.GetComponent<BoxCollider>();
-        if (_collectZoneCollider == null)
+
+        BoxCollider collectZoneCollider = _collectZone.GetComponent<BoxCollider>();
+        if (collectZoneCollider == null)
             throw new InvalidOperationException("[DeskFacility] _collectZone requires BoxCollider.");
+
+        FacilityStackViewRuntime cuffInputViews = new(
+            _submitStackRoot,
+            transform,
+            _cuffResource,
+            false,
+            1,
+            1,
+            0f,
+            0f,
+            _submitLayerSpacing,
+            _submitLocalOffset,
+            false,
+            null,
+            Vector3.zero);
+
+        _prisonerSupplyRuntime = new DeskPrisonerSupplyRuntime(cuffInputViews, MaxCuffPerPrisoner);
+
+        FacilityStackViewRuntime moneyOutputViews = new(
+            _collectStackRoot,
+            transform,
+            _moneyResource,
+            true,
+            _collectColumns,
+            _collectRows,
+            _collectColumnSpacing,
+            _collectRowSpacing,
+            _collectLayerSpacing,
+            _collectLocalOffset,
+            false,
+            collectZoneCollider,
+            _moneyViewEulerAngles);
+
+        _moneyOutputRuntime = new FacilityZoneOutputRuntime(_collectZone, moneyOutputViews);
     }
 
     void LateUpdate()
     {
-        SyncMoneyVisuals();
+        _moneyOutputRuntime.SyncVisuals();
     }
 
     void OnDestroy()
     {
-        PooledViewBridge.ReleaseAll(_cuffViews);
-        PooledViewBridge.ReleaseAll(_moneyViews);
-        _supplyTarget = null;
-        _curCuff = 0;
-        _collectZoneCollider = null;
+        _prisonerSupplyRuntime?.Dispose();
+        _moneyOutputRuntime?.Dispose();
+        _prisonerSupplyRuntime = null;
+        _moneyOutputRuntime = null;
     }
 
     protected override bool CanConsume(ResourceData resource)
     {
-        if (!base.CanConsume(resource))
-            return false;
-
-        if (resource != _cuffResource)
-            return false;
-
-        return _cuffResource.WorldViewPrefab != null;
+        return base.CanConsume(resource) && _prisonerSupplyRuntime.CanConsume(resource);
     }
 
     protected override int GetRemainingCapacity(ResourceData resource)
@@ -78,204 +102,40 @@ public class DeskFacility : FacilityBase
 
     protected override void OnConsumed(ResourceData resource, int amount)
     {
-        GameObject cuffPrefab = _cuffResource.WorldViewPrefab;
-
-        for (int i = 0; i < amount; i++)
-            SpawnCuffView(cuffPrefab, _cuffViews.Count);
+        _prisonerSupplyRuntime.AddBuffered(amount);
     }
 
-    // 지정 Prisoner에게 Desk 버퍼 Cuff를 지급
-    // Prisoner 쪽은 int만 갱신하고, Desk 스택 뷰는 풀 반환으로 제거
+    // 지정 Prisoner에게 Desk 버퍼 Cuff 지급
     public bool TrySupplyCuffToPrisoner(Prisoner prisoner, int amountPerTick, out int supplied, out int currentCuff)
     {
-        supplied = 0;
-        currentCuff = 0;
-        if (prisoner == null)
-            return false;
-
-        if (_supplyTarget != prisoner)
-        {
-            _supplyTarget = prisoner;
-            _curCuff = 0;
-        }
-
-        int current = _curCuff;
-        int max = MaxCuffPerPrisoner;
-        if (current >= max)
-        {
-            currentCuff = current;
-            return false;
-        }
-
-        int need = max - current;
-        int targetAmount = Mathf.Min(Mathf.Max(1, amountPerTick), need, _cuffViews.Count);
-        for (int i = 0; i < targetAmount; i++)
-        {
-            int lastIndex = _cuffViews.Count - 1;
-            PooledViewBridge.Release(_cuffViews[lastIndex]);
-            _cuffViews.RemoveAt(lastIndex);
-            supplied++;
-        }
-
-        _curCuff = current + supplied;
-        currentCuff = _curCuff;
-        return supplied > 0;
+        return _prisonerSupplyRuntime.TrySupplyToPrisoner(prisoner, amountPerTick, out supplied, out currentCuff);
     }
 
-    // 현재 공급 대상 prisoner의 지급된 Cuff 수 반환
     public int GetPrisonerCuff(Prisoner prisoner)
     {
-        if (prisoner == null || _supplyTarget != prisoner)
-            return 0;
-
-        return _curCuff;
+        return _prisonerSupplyRuntime.GetPrisonerCuff(prisoner);
     }
 
-    // prisoner에게 MaxCuffPerPrisoner만큼 지급됐는지 확인
     public bool IsPrisonerCuffFilled(Prisoner prisoner)
     {
-        return _supplyTarget == prisoner && _curCuff >= MaxCuffPerPrisoner;
+        return _prisonerSupplyRuntime.IsPrisonerFilled(prisoner);
     }
 
-    // prisoner를 공급 대상으로 설정하고 카운트 초기화
     public void ResetPrisonerCuff(Prisoner prisoner)
     {
-        if (prisoner == null)
-            return;
-
-        _supplyTarget = prisoner;
-        _curCuff = 0;
+        _prisonerSupplyRuntime.ResetPrisonerCuff(prisoner);
     }
 
-    // prisoner가 공급 대상이면 해제
     public void RemovePrisonerCuff(Prisoner prisoner)
     {
-        if (prisoner == null || _supplyTarget != prisoner)
-            return;
-
-        _supplyTarget = null;
-        _curCuff = 0;
+        _prisonerSupplyRuntime.RemovePrisonerCuff(prisoner);
     }
 
-    // 죄수 1명 통과 시 보상 Money를 CollectZone에 적재
+    // 죄수 1명 통과 시 보상 Money 적재
     public bool TryAddMoneyRewardForPrisonerPass()
     {
-        int rewardAmount = Mathf.Max(1, _rewardMoneyPerPrisoner);
-        _collectZone.AddStoredAmount(rewardAmount);
-        SyncMoneyVisuals();
+        _moneyOutputRuntime.Add(_rewardMoneyPerPrisoner);
         return true;
-    }
-
-    private void SpawnCuffView(GameObject cuffPrefab, int index)
-    {
-        Vector3 position = GetStackWorldPosition(index);
-        GameObject view = PooledViewBridge.Spawn(cuffPrefab, position, Quaternion.identity, transform, true);
-        _cuffViews.Add(view);
-    }
-
-    // Cuff 적층 위치 반환 — 1열 y축 기준
-    private Vector3 GetStackWorldPosition(int index)
-    {
-        return FacilityStackUtility.GetColumnLayerWorldPosition(
-            _submitStackRoot,
-            index,
-            1,
-            0f,
-            _submitLayerSpacing,
-            _submitLocalOffset,
-            false);
-    }
-
-    // CollectZone의 StoredAmount에 맞춰 Money 뷰 개수 및 위치 동기화
-    private void SyncMoneyVisuals()
-    {
-        FacilityStackUtility.CleanupMissing(_moneyViews);
-
-        GameObject moneyPrefab = _moneyResource.WorldViewPrefab;
-
-        int targetCount = Mathf.Max(0, _collectZone.StoredAmount);
-        while (_moneyViews.Count > targetCount)
-        {
-            int lastIndex = _moneyViews.Count - 1;
-            PooledViewBridge.Release(_moneyViews[lastIndex]);
-            _moneyViews.RemoveAt(lastIndex);
-        }
-
-        while (_moneyViews.Count < targetCount)
-            SpawnMoneyView(moneyPrefab, _moneyViews.Count);
-
-        int columns = Mathf.Max(1, _collectColumns);
-        int rows = Mathf.Max(1, _collectRows);
-        Quaternion moneyRotation = Quaternion.Euler(_moneyViewEulerAngles);
-
-        for (int i = 0; i < _moneyViews.Count; i++)
-        {
-            GameObject view = _moneyViews[i];
-            if (view == null)
-                continue;
-
-            view.transform.position = GetGridStackWorldPosition(
-                _collectStackRoot,
-                i,
-                columns,
-                rows,
-                _collectColumnSpacing,
-                _collectRowSpacing,
-                _collectLayerSpacing,
-                _collectLocalOffset);
-            view.transform.rotation = moneyRotation;
-        }
-    }
-
-    private void SpawnMoneyView(GameObject moneyPrefab, int index)
-    {
-        Quaternion moneyRotation = Quaternion.Euler(_moneyViewEulerAngles);
-        Vector3 position = GetGridStackWorldPosition(
-            _collectStackRoot,
-            index,
-            Mathf.Max(1, _collectColumns),
-            Mathf.Max(1, _collectRows),
-            _collectColumnSpacing,
-            _collectRowSpacing,
-            _collectLayerSpacing,
-            _collectLocalOffset);
-
-        GameObject view = PooledViewBridge.Spawn(moneyPrefab, position, moneyRotation, transform, true);
-        _moneyViews.Add(view);
-    }
-
-    // BoxCollider 영역 우선, 없으면 spacing 기준 Grid 좌표 반환
-    private Vector3 GetGridStackWorldPosition(
-        Transform root,
-        int index,
-        int columns,
-        int rows,
-        float columnSpacing,
-        float rowSpacing,
-        float layerSpacing,
-        Vector3 localOffset)
-    {
-        if (FacilityStackUtility.TryGetAreaGridLayerWorldPosition(
-            _collectZoneCollider,
-            index,
-            columns,
-            rows,
-            layerSpacing,
-            localOffset,
-            out Vector3 areaPosition))
-        {
-            return areaPosition;
-        }
-
-        return FacilityStackUtility.GetGridLayerWorldPosition(
-            root,
-            index,
-            columns,
-            rows,
-            columnSpacing,
-            rowSpacing,
-            layerSpacing,
-            localOffset);
     }
 
     private void ValidateBindingsOrThrow()

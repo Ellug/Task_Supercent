@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     [SerializeField] private PlayerView _view;
     [SerializeField] private EquipBase _equip;
     [SerializeField] private ResourceStack _resourceStack;
+    [SerializeField] private ResourceManager _resourceManager;
 
     [Header("Mine")]
     [SerializeField, Range(-1f, 1f)] private float _mineForwardDotMin = 0f;
@@ -45,6 +47,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
         if (_view == null) _view = GetComponent<PlayerView>();
         if (_equip == null) _equip = GetComponent<EquipBase>();
         if (_resourceStack == null) _resourceStack = GetComponent<ResourceStack>();
+        if (_resourceManager == null) throw new InvalidOperationException("[PlayerController] _resourceManager is required.");
 
         BindActions();
     }
@@ -123,7 +126,6 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     // 전방 광산을 자동 채굴하고 성공 시 채굴 산출 자원을 적재
     private void TryAutoMineForwardMine()
     {
-        ResourceManager resourceManager = ResourceManager.Instance;
         EquipData currentEquip = _equip.CurrentEquip;
 
         if (currentEquip == null)
@@ -132,7 +134,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
             return;
         }
 
-        bool hasMineInRange = resourceManager.TryGetMineInFront(transform.position, transform.forward, currentEquip.MineRange, _mineForwardDotMin, out Mine mine);
+        bool hasMineInRange = _resourceManager.TryGetMineInFront(transform.position, transform.forward, currentEquip.MineRange, _mineForwardDotMin, out Mine mine);
         _equip.SetMiningRangeVisual(hasMineInRange);
 
         if (!hasMineInRange) return;

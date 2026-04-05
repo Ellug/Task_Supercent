@@ -42,8 +42,7 @@ public class PrisonerManager : MonoBehaviour
     private QueueRuntime _receiveSlot;
     private QueueRuntime _queueSlot;
     private readonly HashSet<Prisoner> _movingToEntrance = new();
-    private readonly Queue<Prisoner> _entranceQueue = new();
-    private readonly HashSet<Prisoner> _entranceQueued = new();
+    private readonly UniquePrisonerQueue _entranceQueue = new();
     private Prisoner _movingInside;
     private float _nextSupplyTime;
 
@@ -77,7 +76,7 @@ public class PrisonerManager : MonoBehaviour
 
         if (_entranceQueue.Count > 0)
         {
-            List<Prisoner> waiting = new(_entranceQueue);
+            List<Prisoner> waiting = _entranceQueue.Snapshot();
             for (int i = 0; i < waiting.Count; i++)
                 ReleaseManagedPrisoner(waiting[i]);
         }
@@ -86,7 +85,6 @@ public class PrisonerManager : MonoBehaviour
         _queueSlot = null;
         _movingToEntrance.Clear();
         _entranceQueue.Clear();
-        _entranceQueued.Clear();
         _movingInside = null;
     }
 
@@ -267,21 +265,18 @@ public class PrisonerManager : MonoBehaviour
 
         while (_entranceQueue.Count > 0)
         {
-            Prisoner next = _entranceQueue.Peek();
-            if (next == null || !_entranceQueued.Contains(next))
-            {
-                _entranceQueue.Dequeue();
-                continue;
-            }
+            if (!_entranceQueue.TryPeek(out Prisoner next))
+                return;
 
             if (_jailFacility != null && !_jailFacility.TryAcquireEntrance(next))
                 return;
 
-            _entranceQueue.Dequeue();
-            _entranceQueued.Remove(next);
-            _movingInside = next;
-            next.SetPrisonPoint(ResolvePrisonInsidePoint());
-            next.MoveToPrison();
+            if (!_entranceQueue.TryDequeue(out Prisoner entering))
+                return;
+
+            _movingInside = entering;
+            entering.SetPrisonPoint(ResolvePrisonInsidePoint());
+            entering.MoveToPrison();
             return;
         }
     }
@@ -301,7 +296,7 @@ public class PrisonerManager : MonoBehaviour
             return;
 
         _movingToEntrance.Remove(prisoner);
-        _entranceQueued.Remove(prisoner);
+        _entranceQueue.Remove(prisoner);
 
         if (_movingInside == prisoner)
             _movingInside = null;
@@ -319,11 +314,7 @@ public class PrisonerManager : MonoBehaviour
     // 중복 없이 입구 대기열에 추가
     private void EnqueueEntrance(Prisoner prisoner)
     {
-        if (prisoner == null)
-            return;
-
-        if (_entranceQueued.Add(prisoner))
-            _entranceQueue.Enqueue(prisoner);
+        _entranceQueue.Enqueue(prisoner);
     }
 
     // QueueSlot을 ReceiveSlot으로 승격하고 새 QueueSlot 스폰

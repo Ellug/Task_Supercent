@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 // 광석(Ore)을 소비해 쇠고랑(Cuff)을 생산하는 시설
@@ -23,9 +22,9 @@ public class CuffFactory : FacilityBase
     [SerializeField] private Vector3 _collectLocalOffset = new(0f, 0.1f, 0f);
     [SerializeField, Min(1)] private int _collectColumns = 1;
 
-    private readonly List<GameObject> _oreViews = new();
-    private readonly List<GameObject> _cuffViews = new();
-    private float _nextProduceTime;
+    private FacilityStackViewRuntime _oreInputViews;
+    private FacilityZoneOutputRuntime _cuffOutputRuntime;
+    private FacilityTimedProductionRuntime _productionRuntime;
 
     public InteractionZone CollectZone => _collectZone;
 
@@ -33,42 +32,73 @@ public class CuffFactory : FacilityBase
     {
         base.Awake();
         ValidateBindingsOrThrow();
+
+        _oreInputViews = new FacilityStackViewRuntime(
+            _oreStackRoot,
+            transform,
+            _oreResource,
+            false,
+            2,
+            1,
+            _oreColumnSpacing,
+            0f,
+            _oreLayerSpacing,
+            _oreLocalOffset,
+            true,
+            null,
+            Vector3.zero);
+
+        FacilityStackViewRuntime cuffOutputViews = new FacilityStackViewRuntime(
+            _collectStackRoot,
+            transform,
+            _cuffResource,
+            false,
+            _collectColumns,
+            1,
+            _collectColumnSpacing,
+            0f,
+            _collectLayerSpacing,
+            _collectLocalOffset,
+            false,
+            null,
+            Vector3.zero);
+
+        _cuffOutputRuntime = new FacilityZoneOutputRuntime(_collectZone, cuffOutputViews);
+        _productionRuntime = new FacilityTimedProductionRuntime(_produceInterval);
     }
 
     void LateUpdate()
     {
-        SyncCollectVisuals();
-        TryProduce();
+        _cuffOutputRuntime.SyncVisuals();
+        _productionRuntime.TryConvert(_oreInputViews, _cuffOutputRuntime, 1, 1);
     }
 
     // 스폰된 뷰 오브젝트 전체 반환
     void OnDestroy()
     {
-        PooledViewBridge.ReleaseAll(_oreViews);
-        PooledViewBridge.ReleaseAll(_cuffViews);
+        _oreInputViews?.Dispose();
+        _cuffOutputRuntime?.Dispose();
+        _oreInputViews = null;
+        _cuffOutputRuntime = null;
+        _productionRuntime = null;
     }
 
     // 광석 자원만 소비 가능하며, 뷰 프리팹이 있어야 함
     protected override bool CanConsume(ResourceData resource)
     {
-        return base.CanConsume(resource) && resource == _oreResource;
+        return base.CanConsume(resource) && _oreInputViews.MatchesResource(resource);
     }
 
     // 현재 버퍼에 적재 가능한 광석 수량 반환
     protected override int GetRemainingCapacity(ResourceData resource)
     {
-        FacilityStackUtility.CleanupMissing(_oreViews);
         return int.MaxValue;
     }
 
     // InputZone에서 광석을 받으면 뷰 스폰
     protected override void OnConsumed(ResourceData resource, int amount)
     {
-        FacilityStackUtility.CleanupMissing(_oreViews);
-        GameObject orePrefab = _oreResource.WorldViewPrefab;
-
-        for (int i = 0; i < amount; i++)
-            SpawnOreView(orePrefab, _oreViews.Count);
+        _oreInputViews.Add(amount);
     }
 
     // Miner가 채굴 산출 Ore를 직접 SubmitZone으로 적재
@@ -83,99 +113,6 @@ public class CuffFactory : FacilityBase
         int submitAmount = Mathf.Max(1, amount);
         InputZone.AddStoredAmount(submitAmount);
         return submitAmount;
-    }
-
-    // 인터벌마다 광석 1개 소비 → 쇠고랑 1개 생산
-    private void TryProduce()
-    {
-        if (Time.time < _nextProduceTime)
-            return;
-
-        _nextProduceTime = Time.time + Mathf.Max(0.01f, _produceInterval);
-
-        if (_oreViews.Count <= 0)
-            return;
-
-        ConsumeOneOreView();
-        _collectZone.AddStoredAmount(1);
-        SyncCollectVisuals();
-    }
-
-    // CollectZone의 StoredAmount에 맞춰 쇠고랑 뷰 개수 및 위치 동기화
-    private void SyncCollectVisuals()
-    {
-        FacilityStackUtility.CleanupMissing(_cuffViews);
-        GameObject cuffPrefab = _cuffResource.WorldViewPrefab;
-
-        int targetCount = Mathf.Max(0, _collectZone.StoredAmount);
-        while (_cuffViews.Count > targetCount)
-        {
-            int lastIndex = _cuffViews.Count - 1;
-            PooledViewBridge.Release(_cuffViews[lastIndex]);
-            _cuffViews.RemoveAt(lastIndex);
-        }
-
-        while (_cuffViews.Count < targetCount)
-            SpawnCuffView(cuffPrefab, _cuffViews.Count);
-
-        for (int i = 0; i < _cuffViews.Count; i++)
-        {
-            GameObject view = _cuffViews[i];
-            if (view == null)
-                continue;
-
-            view.transform.position = FacilityStackUtility.GetColumnLayerWorldPosition(
-                _collectStackRoot,
-                i,
-                Mathf.Max(1, _collectColumns),
-                _collectColumnSpacing,
-                _collectLayerSpacing,
-                _collectLocalOffset,
-                false);
-
-            view.transform.rotation = Quaternion.identity;
-        }
-    }
-
-    // 광석 버퍼 맨 위 뷰 1개 반환
-    private void ConsumeOneOreView()
-    {
-        FacilityStackUtility.CleanupMissing(_oreViews);
-        if (_oreViews.Count <= 0)
-            return;
-
-        int lastIndex = _oreViews.Count - 1;
-        PooledViewBridge.Release(_oreViews[lastIndex]);
-        _oreViews.RemoveAt(lastIndex);
-    }
-
-    private void SpawnOreView(GameObject orePrefab, int index)
-    {
-        Vector3 position = FacilityStackUtility.GetColumnLayerWorldPosition(
-            _oreStackRoot,
-            index,
-            2,
-            _oreColumnSpacing,
-            _oreLayerSpacing,
-            _oreLocalOffset,
-            true);
-        GameObject view = PooledViewBridge.Spawn(orePrefab, position, Quaternion.identity, transform, true);
-        _oreViews.Add(view);
-    }
-
-    private void SpawnCuffView(GameObject cuffPrefab, int index)
-    {
-        Vector3 position = FacilityStackUtility.GetColumnLayerWorldPosition(
-            _collectStackRoot,
-            index,
-            Mathf.Max(1, _collectColumns),
-            _collectColumnSpacing,
-            _collectLayerSpacing,
-            _collectLocalOffset,
-            false);
-
-        GameObject view = PooledViewBridge.Spawn(cuffPrefab, position, Quaternion.identity, transform, true);
-        _cuffViews.Add(view);
     }
 
     private void ValidateResourceBindingsOrThrow()

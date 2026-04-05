@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 // 감옥 수용 상태 관리
@@ -12,12 +13,20 @@ public class JailFacility : MonoBehaviour
     [SerializeField] private Transform _entrancePoint;
     [SerializeField] private Transform _insidePoint;
 
+    [Header("Objects")]
+    [SerializeField] private Transform _door;
+    [SerializeField] private GameObject _level2Wall;
+
     [Header("Capacity")]
     [SerializeField, Min(1)] private int _maxCapacity = 20;
     [SerializeField, Min(0)] private int _currentCount;
     [SerializeField, Min(1)] private int _upgradeCapacity = 40;
 
+    [Header("Door Animation")]
+    [SerializeField, Min(0.01f)] private float _doorSpeed = 4f;
+
     private Prisoner _entryOwner;
+    private Coroutine _doorCoroutine;
 
     public Transform EntrancePoint => _entrancePoint != null ? _entrancePoint : transform;
     public Transform InsidePoint => _insidePoint != null ? _insidePoint : EntrancePoint;
@@ -108,12 +117,46 @@ public class JailFacility : MonoBehaviour
     // _upgradeCapacity로 최대 수용량 업그레이드
     public bool Upgrade()
     {
-        return SetMaxCapacity(_upgradeCapacity);
+        bool upgraded = SetMaxCapacity(_upgradeCapacity);
+        if (upgraded && _level2Wall != null)
+            _level2Wall.SetActive(false);
+        return upgraded;
     }
 
     private void NotifyStateChanged()
     {
         StateChanged?.Invoke(this);
+        UpdateDoor();
+    }
+
+    private void UpdateDoor()
+    {
+        if (_door == null)
+            return;
+
+        float targetY = IsOpen ? -2f : 1f;
+
+        if (_doorCoroutine != null)
+            StopCoroutine(_doorCoroutine);
+
+        _doorCoroutine = StartCoroutine(MoveDoor(targetY));
+    }
+
+    private IEnumerator MoveDoor(float targetY)
+    {
+        while (true)
+        {
+            Vector3 pos = _door.localPosition;
+            pos.y = Mathf.MoveTowards(pos.y, targetY, _doorSpeed * Time.deltaTime);
+            _door.localPosition = pos;
+
+            if (Mathf.Approximately(pos.y, targetY))
+                break;
+
+            yield return null;
+        }
+
+        _doorCoroutine = null;
     }
 
     private void LogState(string reason)

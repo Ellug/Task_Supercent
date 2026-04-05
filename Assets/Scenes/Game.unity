@@ -5330,6 +5330,7 @@ MonoBehaviour:
   _spawnZOffset: -2
   _spawnSpacing: 1.5
   _cuffFactoryObject: {fileID: 900100003}
+  _resourceManager: {fileID: 2143178655}
 --- !u!114 &1559441676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7574,7 +7575,6 @@ MonoBehaviour:
   _minePrefab: {fileID: -831619766185862333, guid: a97188daacc6e1642b2037488eac6978,
     type: 3}
   _mineRoot: {fileID: 107679266}
-  _playerMoney: 0
 --- !u!4 &2143178656
 Transform:
   m_ObjectHideFlags: 0
@@ -7762,6 +7762,11 @@ PrefabInstance:
       propertyPath: _transferTickInterval
       value: 0.01
       objectReference: {fileID: 0}
+    - target: {fileID: 3867678400118706670, guid: 85272274d7616a5409a713712c4b47ad,
+        type: 3}
+      propertyPath: _resourceManager
+      value: 
+      objectReference: {fileID: 2143178655}
     - target: {fileID: 5694858553860438943, guid: 85272274d7616a5409a713712c4b47ad,
         type: 3}
       propertyPath: m_Name

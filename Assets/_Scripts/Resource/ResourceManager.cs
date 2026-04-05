@@ -10,15 +10,9 @@ public class ResourceManager : Singleton<ResourceManager>
     [SerializeField] private Mine _minePrefab;
     [SerializeField] private Transform _mineRoot;
 
-    [Header("Player Resource")]
-    [SerializeField, Min(0)] private int _playerMoney;
-
     private readonly Dictionary<Vector2Int, Mine> _mineByCell = new();
     private readonly Dictionary<Vector2Int, Coroutine> _respawnByCell = new();
 
-    public int PlayerMoney => _playerMoney;
-
-    public event Action<int> MoneyChanged;
     public event Action<ResourceData, int, Vector3> ResourceYielded;
 
     // MineArea 기반으로 전체 셀에 광산 초기 스폰
@@ -34,7 +28,6 @@ public class ResourceManager : Singleton<ResourceManager>
             _mineRoot = transform;
 
         SpawnAllCellMines();
-        NotifyMoneyChanged();
     }
 
     // 이벤트 구독 해제 및 리스폰 코루틴 정리
@@ -149,37 +142,6 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
-    // 플레이어 소지금 증가 후 MoneyChanged 발생
-    public void AddMoney(int amount)
-    {
-        if (amount <= 0)
-            return;
-
-        _playerMoney += amount;
-        NotifyMoneyChanged();
-    }
-
-    // 잔액이 충분하면 차감 후 true 반환, 부족하면 false
-    public bool TrySpendMoney(int amount)
-    {
-        if (amount <= 0)
-            return true;
-
-        if (_playerMoney < amount)
-            return false;
-
-        _playerMoney -= amount;
-        NotifyMoneyChanged();
-        return true;
-    }
-
-    // 플레이어 소지금을 지정값으로 직접 설정
-    public void SetMoney(int amount)
-    {
-        _playerMoney = Mathf.Max(0, amount);
-        NotifyMoneyChanged();
-    }
-
     // MineArea 전체 셀에 광산 일괄 스폰
     private void SpawnAllCellMines()
     {
@@ -187,7 +149,7 @@ public class ResourceManager : Singleton<ResourceManager>
             TrySpawnMine(cell);
     }
 
-    // 광산 소진 시 ResourceYielded 발생, Money면 소지금 추가, 리스폰 예약
+    // 광산 소진 시 ResourceYielded 발생 후 리스폰 예약
     private void OnMineDepleted(Mine mine, ResourceData yieldResource, int yieldAmount)
     {
         if (mine == null)
@@ -198,9 +160,6 @@ public class ResourceManager : Singleton<ResourceManager>
             return;
 
         ResourceYielded?.Invoke(yieldResource, yieldAmount, mine.transform.position);
-
-        if (yieldResource != null && yieldResource.IsMoney)
-            AddMoney(yieldAmount);
 
         mine.gameObject.SetActive(false);
 
@@ -221,9 +180,4 @@ public class ResourceManager : Singleton<ResourceManager>
         TrySpawnMine(cell);
     }
 
-    // MoneyChanged 이벤트에 현재 소지금 전달
-    private void NotifyMoneyChanged()
-    {
-        MoneyChanged?.Invoke(_playerMoney);
-    }
 }

@@ -24,9 +24,11 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     [Header("Interaction Transfer")]
     [SerializeField, Min(0f)] private float _transferTickInterval = 0.01f;
     [SerializeField, Min(1)] private int _transferAmountPerTick = 1;
+    [SerializeField, Min(0f)] private float _maxPopupInterval = 2f;
 
     private InputAction _moveAction;
-    private bool _loggedStackMax;
+    private bool _isInMaxLoop;
+    private float _nextMaxPopupTime;
     private Vector2 _lastMoveInput;
 
     public EquipBase Equip => _equip;
@@ -140,17 +142,18 @@ public class PlayerController : MonoBehaviour, IInteractionActor
         // 적재 공간이 없으면 채굴 중단
         if (predictedResource != null && _resourceStack.GetRemaining(predictedResource) <= 0)
         {
-            if (!_loggedStackMax)
+            if (!_isInMaxLoop || Time.time >= _nextMaxPopupTime)
             {
-                // TODO : 디버그 MAX를 나중에 UI 출력으로 변경 예정
-                Debug.Log("MAX");
-                _loggedStackMax = true;
+                // 적재 한도 도달 팝업 출력
+                MaxPopupUI.Instance.ShowAt(transform);
+                _nextMaxPopupTime = Time.time + Mathf.Max(0f, _maxPopupInterval);
             }
 
+            _isInMaxLoop = true;
             return;
         }
 
-        _loggedStackMax = false;
+        _isInMaxLoop = false;
 
         if (!_equip.TryMine(mine, out ResourceData yieldResource, out int yieldAmount, out bool depleted))
             return;

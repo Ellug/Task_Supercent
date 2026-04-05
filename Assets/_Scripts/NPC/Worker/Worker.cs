@@ -60,27 +60,32 @@ public class Worker : NPC
         ChangeState(_moveToCollectState);
     }
 
+    // 대기 위치 설정
     public void SetWaitPoint(Transform point)
     {
         _waitPoint = point;
     }
 
+    // 수집 존 변경
     public void SetCollectZone(InteractionZone zone)
     {
         _collectZone = zone;
     }
 
+    // 제출 존 변경
     public void SetSubmitZone(InteractionZone zone)
     {
         _submitZone = zone;
     }
 
+    // 운반 루프 재개
     public void StartWork()
     {
         _isWorking = true;
         ChangeState(_moveToCollectState);
     }
 
+    // 운반 중단
     public void StopWork()
     {
         _isWorking = false;
@@ -105,6 +110,7 @@ public class Worker : NPC
     internal bool MoveToCollectPoint() => MoveToPoint(CollectPosition);
     internal bool MoveToSubmitPoint() => MoveToPoint(SubmitPosition);
 
+    // 수집 인터벌마다 CollectZone에서 적재량 한도까지 수집
     internal bool TryCollectTick()
     {
         if (_collectZone == null || _collectZone.Resource == null)
@@ -131,6 +137,7 @@ public class Worker : NPC
         return true;
     }
 
+    // 제출 인터벌마다 보유분을 SubmitZone에 전달
     internal bool TrySubmitTick()
     {
         if (_submitZone == null || _submitZone.Resource == null)
@@ -158,6 +165,7 @@ public class Worker : NPC
     internal void EnterMoveToSubmit() => ChangeState(_moveToSubmitState);
     internal void EnterSubmit() => ChangeState(_submitState);
 
+    // 적재량 증가 및 뷰 스폰
     private void AddCarry(int amount)
     {
         int addAmount = Mathf.Max(0, amount);
@@ -182,6 +190,7 @@ public class Worker : NPC
         RefreshCarryViewTransforms();
     }
 
+    // 적재량 감소 및 뷰 반환
     private void RemoveCarry(int amount)
     {
         int removeAmount = Mathf.Max(0, amount);
@@ -200,6 +209,7 @@ public class Worker : NPC
         RefreshCarryViewTransforms();
     }
 
+    // 모든 운반 뷰 위치를 _carryRoot 기준으로 재배치
     private void RefreshCarryViewTransforms()
     {
         Transform root = ResolveCarryRoot();
@@ -216,6 +226,7 @@ public class Worker : NPC
         }
     }
 
+    // _carryRoot 없으면 자신의 transform 반환
     private Transform ResolveCarryRoot()
     {
         if (_carryRoot != null)
@@ -224,6 +235,7 @@ public class Worker : NPC
         return transform;
     }
 
+    // CollectZone 자원의 WorldViewPrefab 반환
     private GameObject ResolveCarryPrefab()
     {
         ResourceData resource = _collectZone != null ? _collectZone.Resource : null;

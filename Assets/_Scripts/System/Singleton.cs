@@ -23,5 +23,6 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         OnSingletonAwake();
     }
 
+    // 싱글톤 초기화 훅
     protected virtual void OnSingletonAwake() { }
 }

@@ -39,21 +39,25 @@ public class Prisoner : NPC
         ChangeState(_moveToQueueState);
     }
 
+    // 대기열 포인트 설정
     public void SetQueuePoint(Transform point)
     {
         _queuePoint = point;
     }
 
+    // 수령 포인트 설정
     public void SetReceivePoint(Transform point)
     {
         _receiveCuffPoint = point;
     }
 
+    // 감옥 포인트 설정
     public void SetPrisonPoint(Transform point)
     {
         _prisonPoint = point;
     }
 
+    // 대기열로 이동 (Cuff 초기화)
     public void MoveToQueue()
     {
         _externalStateRequested = true;
@@ -61,12 +65,14 @@ public class Prisoner : NPC
         ChangeState(_moveToQueueState);
     }
 
+    // 수령 지점으로 이동
     public void MoveToReceive()
     {
         _externalStateRequested = true;
         ChangeState(_moveToReceiveState);
     }
 
+    // 감옥으로 이동 (HasCuff = true)
     public void MoveToPrison()
     {
         _externalStateRequested = true;

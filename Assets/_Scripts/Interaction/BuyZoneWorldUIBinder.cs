@@ -45,6 +45,7 @@ public class BuyZoneWorldUIBinder : MonoBehaviour
         Refresh();
     }
 
+    // Zone 상태 기준으로 수량 텍스트·아이콘 갱신
     private void Refresh()
     {
         if (_zone == null)

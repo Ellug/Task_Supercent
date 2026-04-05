@@ -83,6 +83,7 @@ public class ResourceStack : MonoBehaviour
         return _slotByResource.TryGetValue(resource, out Slot slot) ? slot.Capacity : 0;
     }
 
+    // 조건에 맞는 첫 번째 자원 반환 — 없으면 false
     public bool TryGetFirstResource(System.Predicate<ResourceData> match, out ResourceData resource)
     {
         if (match != null)

@@ -258,6 +258,7 @@ public class InteractionZone : MonoBehaviour
             NotifyStateChanged();
     }
 
+    // 타입별 틱 간격 반환 — Collect는 CollectTickInterval, 나머지는 SubmitTickInterval
     private float GetEffectiveTickInterval(IInteractionActor actor)
     {
         if (_type == InteractionZoneType.CollectResource)
@@ -266,6 +267,7 @@ public class InteractionZone : MonoBehaviour
         return actor.SubmitTickInterval;
     }
 
+    // 타입별 틱당 처리량 반환 — 액터 없으면 _amountPerTick 폴백
     private int GetEffectiveAmountPerTick(IInteractionActor actor)
     {
         if (actor != null)
@@ -313,12 +315,11 @@ public class InteractionZone : MonoBehaviour
         }
     }
 
-    // priceOverride → purchaseEquip.Price → completeAmount 순으로 구매 필요 금액 결정
+    // priceOverride → completeAmount 순으로 구매 필요 금액 결정
     private int GetPurchaseRequiredAmount()
     {
-        int price = _priceOverride >= 0 ? _priceOverride : (_purchaseEquip != null ? _purchaseEquip.Price : 0);
-        if (price > 0)
-            return price;
+        if (_priceOverride >= 0)
+            return _priceOverride;
 
         if (_completeAmount > 0)
             return _completeAmount;
@@ -345,8 +346,7 @@ public class InteractionZone : MonoBehaviour
     // _runtime이 null이면 새로 생성 후 초기화
     private void EnsureRuntimeState()
     {
-        if (_runtime == null)
-            _runtime = new InteractionZoneRuntimeState();
+        _runtime ??= new InteractionZoneRuntimeState();
 
         _runtime.ResetProgress(_storedAmount);
     }

@@ -11,7 +11,10 @@ public abstract class NpcState<TNpc> : INpcState where TNpc : NPC
 
     public abstract string Name { get; }
 
+    // 상태 진입 처리
     public virtual void Enter() { }
+    // 상태 프레임 처리
     public virtual void Tick(float deltaTime) { }
+    // 상태 종료 처리
     public virtual void Exit() { }
 }

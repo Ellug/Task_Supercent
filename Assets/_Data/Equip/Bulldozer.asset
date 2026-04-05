@@ -17,6 +17,6 @@ MonoBehaviour:
   _playerViewPrefab: {fileID: 300100000000000001, guid: bbc4f44ba3484d0998c6af68e5700caf,
     type: 3}
   _price: 900
-  _mineRange: 5.5
-  _mineInterval: 1.2
+  _mineRange: 7
+  _mineInterval: 0.1
   _simultaneousMineCount: 3

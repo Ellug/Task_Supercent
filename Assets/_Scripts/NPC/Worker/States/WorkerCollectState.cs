@@ -1,6 +1,7 @@
 // 수집 지점에서 최대 적재량까지 인터벌 수집
 public sealed class WorkerCollectState : NpcState<Worker>
 {
+    // 수집 상태 생성
     public WorkerCollectState(Worker npc) : base(npc) { }
     public override string Name => "Collect";
 

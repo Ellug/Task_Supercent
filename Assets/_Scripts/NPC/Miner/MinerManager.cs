@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,26 +31,23 @@ public class MinerManager : MonoBehaviour
     void Awake()
     {
         ResolveReferences();
+        ValidateReferencesOrThrow();
     }
 
     void OnEnable()
     {
-        ResolveReferences();
-
-        if (_buyMinerZone != null)
-            _buyMinerZone.Completed += OnBuyMinerZoneCompleted;
+        _buyMinerZone.Completed += OnBuyMinerZoneCompleted;
     }
 
     void Start()
     {
-        if (_buyMinerZone != null && _buyMinerZone.IsCompleted)
+        if (_buyMinerZone.IsCompleted)
             OnBuyMinerZoneCompleted(_buyMinerZone);
     }
 
     void OnDisable()
     {
-        if (_buyMinerZone != null)
-            _buyMinerZone.Completed -= OnBuyMinerZoneCompleted;
+        _buyMinerZone.Completed -= OnBuyMinerZoneCompleted;
     }
 
     private void ResolveReferences()
@@ -60,11 +58,6 @@ public class MinerManager : MonoBehaviour
         if (_cuffFactoryObject != null)
             _cuffFactoryObject.TryGetComponent(out _cuffFactory);
 
-        if (_buyMinerZone == null)
-            Debug.LogWarning("[MinerManager] Buy Miner Zone object is missing or has no InteractionZone.");
-
-        if (_cuffFactory == null)
-            Debug.LogWarning("[MinerManager] CuffFactory object is missing or has no CuffFactory component.");
     }
 
     // miner 위치 기준으로 가장 가까운 비할당 Mine을 1개 할당
@@ -159,12 +152,6 @@ public class MinerManager : MonoBehaviour
         if (_spawned)
             return;
 
-        if (_minerPrefab == null || _buyMinerZone == null)
-        {
-            Debug.LogWarning("[MinerManager] Miner prefab or Buy Miner Zone is missing.");
-            return;
-        }
-
         Vector3 spawnBase = GetSpawnBasePosition();
         Quaternion spawnRotation = GetUprightRotation(_buyMinerZone.transform.rotation);
         Transform root = _npcRoot != null ? _npcRoot : transform;
@@ -177,9 +164,6 @@ public class MinerManager : MonoBehaviour
             Vector3 spawnPosition = spawnBase + new Vector3(xOffset, 0f, 0f);
             spawnPosition.y = 1f;
             Miner miner = Instantiate(_minerPrefab, spawnPosition, spawnRotation, root);
-            if (miner == null)
-                continue;
-
             _miners.Add(miner);
             miner.Initialize(this);
         }
@@ -187,14 +171,21 @@ public class MinerManager : MonoBehaviour
         _spawned = _miners.Count > 0;
     }
 
+    private void ValidateReferencesOrThrow()
+    {
+        if (_minerPrefab == null)
+            throw new InvalidOperationException("[MinerManager] _minerPrefab is required.");
+
+        if (_buyMinerZoneObject == null || _buyMinerZone == null)
+            throw new InvalidOperationException("[MinerManager] _buyMinerZoneObject with InteractionZone is required.");
+
+        if (_cuffFactoryObject == null || _cuffFactory == null)
+            throw new InvalidOperationException("[MinerManager] _cuffFactoryObject with CuffFactory is required.");
+    }
+
     private Vector3 GetSpawnBasePosition()
     {
-        Vector3 position;
-        if (_buyMinerZone != null)
-            position = _buyMinerZone.transform.position + new Vector3(0f, 0f, _spawnZOffset);
-        else
-            position = transform.position;
-
+        Vector3 position = _buyMinerZone.transform.position + new Vector3(0f, 0f, _spawnZOffset);
         position.y = 1f;
         return position;
     }

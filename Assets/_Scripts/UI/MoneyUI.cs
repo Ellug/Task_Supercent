@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ public class MoneyUI : MonoBehaviour
     void Awake()
     {
         if (_moneyText == null)
-            _moneyText = GetComponentInChildren<TMP_Text>();
+            throw new InvalidOperationException("[MoneyUI] _moneyText is required.");
 
         BindPlayerIfNeeded();
         RefreshText(GetCurrentMoneyAmount());
@@ -36,6 +37,7 @@ public class MoneyUI : MonoBehaviour
         UnbindStack();
     }
 
+    // 코드에서 플레이어·자원 교체 후 즉시 갱신
     public void Bind(PlayerController player, ResourceData moneyResource = null)
     {
         _player = player;
@@ -46,11 +48,9 @@ public class MoneyUI : MonoBehaviour
         RefreshText(GetCurrentMoneyAmount());
     }
 
+    // 현재 _player의 CarryStack으로 이벤트 재바인딩
     private void BindPlayerIfNeeded()
     {
-        if (_player == null)
-            _player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Exclude);
-
         ResourceStack nextStack = _player != null ? _player.CarryStack : null;
         if (_boundStack == nextStack)
             return;
@@ -65,6 +65,7 @@ public class MoneyUI : MonoBehaviour
         }
     }
 
+    // Changed 이벤트 구독 해제
     private void UnbindStack()
     {
         if (_boundStack == null)
@@ -74,6 +75,7 @@ public class MoneyUI : MonoBehaviour
         _boundStack = null;
     }
 
+    // 스택 변경 콜백 — Money 자원일 때만 텍스트 갱신
     private void OnCarryStackChanged(ResourceData resource, int count, int capacity)
     {
         if (_moneyResource == null)
@@ -91,6 +93,7 @@ public class MoneyUI : MonoBehaviour
             RefreshText(count);
     }
 
+    // 현재 Money 보유량 반환
     private int GetCurrentMoneyAmount()
     {
         if (_boundStack == null || _moneyResource == null)
@@ -104,6 +107,7 @@ public class MoneyUI : MonoBehaviour
         return resource != null && resource.IsMoney;
     }
 
+    // _format에 amount 적용 후 텍스트 갱신
     private void RefreshText(int amount)
     {
         if (_moneyText == null)

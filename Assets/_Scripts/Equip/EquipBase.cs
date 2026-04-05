@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EquipBase : MonoBehaviour
@@ -124,44 +123,6 @@ public class EquipBase : MonoBehaviour
             _presentation?.PlayMineDepleted(mine.transform.position);
 
         return true;
-    }
-
-    // 쿨타임·사거리 체크 후 SimultaneousMineCount 한도로 복수 광산 채굴 — 채굴 성공 수 반환
-    public int TryMineMulti(IReadOnlyList<Mine> mines, List<EquipMineResult> resultBuffer = null)
-    {
-        if (_currentEquip == null || mines == null || mines.Count == 0)
-            return 0;
-
-        float now = Time.time;
-        if (now < _nextMineTime)
-            return 0;
-
-        int mineCount = 0;
-        int maxMineCount = _currentEquip.SimultaneousMineCount;
-
-        for (int i = 0; i < mines.Count && mineCount < maxMineCount; i++)
-        {
-            Mine mine = mines[i];
-            if (mine == null || !mine.gameObject.activeInHierarchy)
-                continue;
-
-            if (!IsInRange(mine))
-                continue;
-
-            _presentation?.PlayMineAction(mine.transform.position);
-
-            bool depleted = mine.TryMine(_mineDamage, out ResourceData yieldResource, out int yieldAmount);
-            if (depleted)
-                _presentation?.PlayMineDepleted(mine.transform.position);
-
-            resultBuffer?.Add(new EquipMineResult(mine, yieldResource, yieldAmount, depleted));
-            mineCount++;
-        }
-
-        if (mineCount > 0)
-            _nextMineTime = now + _currentEquip.MineInterval;
-
-        return mineCount;
     }
 
     // mine이 현재 장비 사거리 안에 있는지 확인

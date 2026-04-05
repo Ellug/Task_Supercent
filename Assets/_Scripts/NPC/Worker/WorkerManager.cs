@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,26 +28,23 @@ public class WorkerManager : MonoBehaviour
     void Awake()
     {
         ResolveReferences();
+        ValidateReferencesOrThrow();
     }
 
     void OnEnable()
     {
-        ResolveReferences();
-
-        if (_buyWorkerZone != null)
-            _buyWorkerZone.Completed += OnBuyWorkerZoneCompleted;
+        _buyWorkerZone.Completed += OnBuyWorkerZoneCompleted;
     }
 
     void Start()
     {
-        if (_buyWorkerZone != null && _buyWorkerZone.IsCompleted)
+        if (_buyWorkerZone.IsCompleted)
             OnBuyWorkerZoneCompleted(_buyWorkerZone);
     }
 
     void OnDisable()
     {
-        if (_buyWorkerZone != null)
-            _buyWorkerZone.Completed -= OnBuyWorkerZoneCompleted;
+        _buyWorkerZone.Completed -= OnBuyWorkerZoneCompleted;
     }
 
     private void ResolveReferences()
@@ -60,14 +58,6 @@ public class WorkerManager : MonoBehaviour
         if (_deskObject != null)
             _deskObject.TryGetComponent(out _deskFacility);
 
-        if (_buyWorkerZone == null)
-            Debug.LogWarning("[WorkerManager] Buy Worker Zone object is missing or has no InteractionZone.");
-
-        if (_cuffFactory == null)
-            Debug.LogWarning("[WorkerManager] CuffFactory object is missing or has no CuffFactory component.");
-
-        if (_deskFacility == null)
-            Debug.LogWarning("[WorkerManager] Desk object is missing or has no DeskFacility component.");
     }
 
     private void OnBuyWorkerZoneCompleted(InteractionZone zone)
@@ -87,12 +77,8 @@ public class WorkerManager : MonoBehaviour
             return;
 
         ResolveRouteZones(out InteractionZone collectZone, out InteractionZone submitZone);
-
-        if (_workerPrefab == null || _buyWorkerZone == null || collectZone == null || submitZone == null)
-        {
-            Debug.LogWarning("[WorkerManager] Worker prefab or route references are missing.");
-            return;
-        }
+        if (collectZone == null || submitZone == null)
+            throw new InvalidOperationException("[WorkerManager] Route zones are required.");
 
         Transform root = _npcRoot != null ? _npcRoot : transform;
         Vector3 basePosition = _buyWorkerZone.transform.position;
@@ -107,9 +93,6 @@ public class WorkerManager : MonoBehaviour
             Vector3 spawnPosition = basePosition + new Vector3(xOffset, 0f, 0f);
             spawnPosition.y = 1f;
             Worker worker = Instantiate(_workerPrefab, spawnPosition, rotation, root);
-            if (worker == null)
-                continue;
-
             worker.Initialize(collectZone, submitZone);
             _workers.Add(worker);
         }
@@ -117,10 +100,25 @@ public class WorkerManager : MonoBehaviour
         _spawned = _workers.Count > 0;
     }
 
+    private void ValidateReferencesOrThrow()
+    {
+        if (_workerPrefab == null)
+            throw new InvalidOperationException("[WorkerManager] _workerPrefab is required.");
+
+        if (_buyWorkerZoneObject == null || _buyWorkerZone == null)
+            throw new InvalidOperationException("[WorkerManager] _buyWorkerZoneObject with InteractionZone is required.");
+
+        if (_cuffFactoryObject == null || _cuffFactory == null)
+            throw new InvalidOperationException("[WorkerManager] _cuffFactoryObject with CuffFactory is required.");
+
+        if (_deskObject == null || _deskFacility == null)
+            throw new InvalidOperationException("[WorkerManager] _deskObject with DeskFacility is required.");
+    }
+
     private void ResolveRouteZones(out InteractionZone collectZone, out InteractionZone submitZone)
     {
-        collectZone = _cuffFactory != null ? _cuffFactory.CollectZone : null;
-        submitZone = _deskFacility != null ? _deskFacility.BoundInputZone : null;
+        collectZone = _cuffFactory.CollectZone;
+        submitZone = _deskFacility.BoundInputZone;
     }
 
     private static Quaternion GetUprightRotation(Quaternion source)

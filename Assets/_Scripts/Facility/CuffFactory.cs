@@ -160,9 +160,6 @@ public class CuffFactory : FacilityBase
             _oreLocalOffset,
             true);
         GameObject view = PooledViewBridge.Spawn(orePrefab, position, Quaternion.identity, transform, true);
-        if (view == null)
-            return;
-
         _oreViews.Add(view);
     }
 
@@ -178,9 +175,6 @@ public class CuffFactory : FacilityBase
             false);
 
         GameObject view = PooledViewBridge.Spawn(cuffPrefab, position, Quaternion.identity, transform, true);
-        if (view == null)
-            return;
-
         _cuffViews.Add(view);
     }
 

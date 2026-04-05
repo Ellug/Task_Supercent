@@ -122,6 +122,7 @@ public class DeskFacility : FacilityBase
         return supplied > 0;
     }
 
+    // 현재 공급 대상 prisoner의 지급된 Cuff 수 반환
     public int GetPrisonerCuff(Prisoner prisoner)
     {
         if (prisoner == null || _supplyTarget != prisoner)
@@ -130,11 +131,13 @@ public class DeskFacility : FacilityBase
         return _curCuff;
     }
 
+    // prisoner에게 MaxCuffPerPrisoner만큼 지급됐는지 확인
     public bool IsPrisonerCuffFilled(Prisoner prisoner)
     {
         return _supplyTarget == prisoner && _curCuff >= MaxCuffPerPrisoner;
     }
 
+    // prisoner를 공급 대상으로 설정하고 카운트 초기화
     public void ResetPrisonerCuff(Prisoner prisoner)
     {
         if (prisoner == null)
@@ -144,6 +147,7 @@ public class DeskFacility : FacilityBase
         _curCuff = 0;
     }
 
+    // prisoner가 공급 대상이면 해제
     public void RemovePrisonerCuff(Prisoner prisoner)
     {
         if (prisoner == null || _supplyTarget != prisoner)
@@ -153,6 +157,7 @@ public class DeskFacility : FacilityBase
         _curCuff = 0;
     }
 
+    // 죄수 1명 통과 시 보상 Money를 CollectZone에 적재
     public bool TryAddMoneyRewardForPrisonerPass()
     {
         int rewardAmount = Mathf.Max(1, _rewardMoneyPerPrisoner);
@@ -168,7 +173,7 @@ public class DeskFacility : FacilityBase
         _cuffViews.Add(view);
     }
 
-    // 1열 기준 y축 적층
+    // Cuff 적층 위치 반환 — 1열 y축 기준
     private Vector3 GetStackWorldPosition(int index)
     {
         return FacilityStackUtility.GetColumnLayerWorldPosition(
@@ -181,16 +186,12 @@ public class DeskFacility : FacilityBase
             false);
     }
 
+    // CollectZone의 StoredAmount에 맞춰 Money 뷰 개수 및 위치 동기화
     private void SyncMoneyVisuals()
     {
         FacilityStackUtility.CleanupMissing(_moneyViews);
 
         GameObject moneyPrefab = _moneyResource.WorldViewPrefab;
-        if (moneyPrefab == null)
-        {
-            PooledViewBridge.ReleaseAll(_moneyViews);
-            return;
-        }
 
         int targetCount = Mathf.Max(0, _collectZone.StoredAmount);
         while (_moneyViews.Count > targetCount)
@@ -240,12 +241,10 @@ public class DeskFacility : FacilityBase
             _collectLocalOffset);
 
         GameObject view = PooledViewBridge.Spawn(moneyPrefab, position, moneyRotation, transform, true);
-        if (view == null)
-            return;
-
         _moneyViews.Add(view);
     }
 
+    // BoxCollider 영역 우선, 없으면 spacing 기준 Grid 좌표 반환
     private Vector3 GetGridStackWorldPosition(
         Transform root,
         int index,

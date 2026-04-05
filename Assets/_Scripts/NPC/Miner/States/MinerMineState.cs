@@ -5,6 +5,7 @@ public sealed class MinerMineState : NpcState<Miner>
 {
     private float _nextMineTime;
 
+    // 채굴 상태 생성
     public MinerMineState(Miner npc) : base(npc) { }
     public override string Name => "Mine";
 

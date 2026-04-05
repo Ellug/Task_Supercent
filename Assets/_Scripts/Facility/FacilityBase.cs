@@ -13,16 +13,10 @@ public abstract class FacilityBase : MonoBehaviour
 
     protected InteractionZone InputZone => _inputZone;
     public InteractionZone BoundInputZone => _inputZone;
-    protected bool HasInputZone => _inputZone != null;
     protected float ConsumeInterval => Mathf.Max(0f, _consumeInterval);
     protected int ConsumeAmountPerTick => Mathf.Max(1, _consumeAmountPerTick);
 
-    // 런타임에서 InputZone을 코드로 연결할 때 사용
-    protected void BindInputZone(InteractionZone inputZone)
-    {
-        _inputZone = inputZone;
-    }
-
+    // 기본 초기화 훅
     protected virtual void Awake() {}
 
     void Update()

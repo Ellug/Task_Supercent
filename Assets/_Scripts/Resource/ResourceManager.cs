@@ -21,18 +21,14 @@ public class ResourceManager : Singleton<ResourceManager>
     public event Action<int> MoneyChanged;
     public event Action<ResourceData, int, Vector3> ResourceYielded;
 
-    // MineArea 자동 탐색 후 전체 셀에 광산 초기 스폰
+    // MineArea 기반으로 전체 셀에 광산 초기 스폰
     protected override void OnSingletonAwake()
     {
         if (_mineArea == null)
-            _mineArea = FindObjectOfType<MineArea>();
+            throw new InvalidOperationException("[ResourceManager] _mineArea is required.");
 
-        if (_mineArea == null)
-        {
-            Debug.LogWarning("[ResourceManager] MineArea is missing.");
-            NotifyMoneyChanged();
-            return;
-        }
+        if (_minePrefab == null)
+            throw new InvalidOperationException("[ResourceManager] _minePrefab is required.");
 
         if (_mineRoot == null)
             _mineRoot = transform;

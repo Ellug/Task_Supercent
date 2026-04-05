@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
@@ -9,9 +10,10 @@ public class CameraController : MonoBehaviour
     void Awake()
     {
         if (_playerModel == null)
-            _playerModel = FindObjectOfType<PlayerModel>();
+            throw new InvalidOperationException("[CameraController] _playerModel is required.");
     }
 
+    // xRot/distance로 카메라 오프셋 계산 후 플레이어 추적
     void LateUpdate()
     {
         if (_playerModel == null) return;

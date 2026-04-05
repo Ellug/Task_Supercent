@@ -1,6 +1,7 @@
 // 감옥 지점 도착 시 ArrivedAtPrisonPoint 이벤트 발생
 public sealed class PrisonerMoveToPrisonState : NpcState<Prisoner>
 {
+    // 감옥 이동 상태 생성
     public PrisonerMoveToPrisonState(Prisoner npc) : base(npc) { }
     public override string Name => "MoveToPrison";
 

@@ -37,12 +37,14 @@ public class Miner : NPC
         ChangeState(_waitState);
     }
 
+    // 채굴 재개
     public void StartWork()
     {
         _isWorking = true;
         ChangeState(_waitState);
     }
 
+    // 채굴 중단 및 타겟 해제
     public void StopWork()
     {
         _isWorking = false;
@@ -60,6 +62,7 @@ public class Miner : NPC
     internal int MineDamage => Mathf.Max(1, _mineDamage);
     internal bool HasValidTargetMine => _targetMine != null && _targetMine.gameObject.activeInHierarchy;
 
+    // MinerManager에서 가장 가까운 비할당 Mine을 요청해 할당
     internal bool TryAcquireTargetMine()
     {
         if (_manager == null)
@@ -72,12 +75,14 @@ public class Miner : NPC
         return true;
     }
 
+    // 현재 Mine 할당 해제
     internal void ClearTargetMine()
     {
         _manager?.ReleaseMine(this);
         _targetMine = null;
     }
 
+    // 타겟 Mine 방향으로 이동 — 도착 시 true 반환
     internal bool MoveToTargetMine()
     {
         if (!HasValidTargetMine)
@@ -87,6 +92,7 @@ public class Miner : NPC
         return MoveToPoint(_targetMine.transform.position, stopDistance);
     }
 
+    // 타겟 Mine이 채굴 범위 안에 있는지 확인
     internal bool IsAtTargetMine()
     {
         if (!HasValidTargetMine)
@@ -97,6 +103,7 @@ public class Miner : NPC
         return toTarget.magnitude <= MineStopDistance;
     }
 
+    // 타겟 Mine 채굴 — 고갈 시 MinerManager에 산출물 전달
     internal void MineTarget()
     {
         if (!HasValidTargetMine)

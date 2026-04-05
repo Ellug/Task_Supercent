@@ -47,15 +47,6 @@ public class PrisonerManager : MonoBehaviour
     private Prisoner _movingInside;
     private float _nextSupplyTime;
 
-    void Awake()
-    {
-        if (_deskFacility == null)
-            _deskFacility = FindObjectOfType<DeskFacility>();
-
-        if (_jailFacility == null)
-            _jailFacility = FindObjectOfType<JailFacility>();
-    }
-
     void Start()
     {
         EnsureQueueFilled();
@@ -99,6 +90,7 @@ public class PrisonerManager : MonoBehaviour
         _movingInside = null;
     }
 
+    // ReceiveSlot·QueueSlot이 비어있으면 스폰 또는 승격으로 채움
     private void EnsureQueueFilled()
     {
         if (_receiveSlot == null)
@@ -168,6 +160,7 @@ public class PrisonerManager : MonoBehaviour
         ProcessEntranceQueue();
     }
 
+    // Receive 슬롯용 Prisoner 스폰 및 초기화
     private QueueRuntime SpawnReceiveSlot()
     {
         Prisoner prisoner = SpawnPrisoner();
@@ -176,6 +169,7 @@ public class PrisonerManager : MonoBehaviour
         return slot;
     }
 
+    // Queue 슬롯용 Prisoner 스폰 및 초기화
     private QueueRuntime SpawnQueueSlot()
     {
         Prisoner prisoner = SpawnPrisoner();
@@ -184,6 +178,7 @@ public class PrisonerManager : MonoBehaviour
         return slot;
     }
 
+    // _spawnPoint 위치에 Prisoner 인스턴스 생성 후 이벤트 구독
     private Prisoner SpawnPrisoner()
     {
         Transform root = _npcRoot != null ? _npcRoot : transform;
@@ -197,6 +192,7 @@ public class PrisonerManager : MonoBehaviour
         return prisoner;
     }
 
+    // 포인트 설정 후 Desk Cuff 초기화 → 수령 지점으로 이동
     private void ConfigureAsReceiveSlot(QueueRuntime slot)
     {
         slot.ResetState();
@@ -210,6 +206,7 @@ public class PrisonerManager : MonoBehaviour
         slot.Prisoner.MoveToReceive();
     }
 
+    // 포인트 설정 후 대기열로 이동
     private void ConfigureAsQueueSlot(QueueRuntime slot)
     {
         slot.ResetState();
@@ -297,6 +294,7 @@ public class PrisonerManager : MonoBehaviour
         ReleaseManagedPrisoner(slot.Prisoner);
     }
 
+    // 이벤트 구독 해제·추적 컬렉션 정리·감옥 예약 취소
     private void ReleaseManagedPrisoner(Prisoner prisoner)
     {
         if (prisoner == null)
@@ -318,6 +316,7 @@ public class PrisonerManager : MonoBehaviour
         prisoner.ArrivedAtPrisonPoint -= OnPrisonerArrivedAtPrisonPoint;
     }
 
+    // 중복 없이 입구 대기열에 추가
     private void EnqueueEntrance(Prisoner prisoner)
     {
         if (prisoner == null)
@@ -327,6 +326,7 @@ public class PrisonerManager : MonoBehaviour
             _entranceQueue.Enqueue(prisoner);
     }
 
+    // QueueSlot을 ReceiveSlot으로 승격하고 새 QueueSlot 스폰
     private void PromoteQueueToReceive()
     {
         if (_queueSlot == null)
@@ -350,6 +350,7 @@ public class PrisonerManager : MonoBehaviour
         return (_jailFacility.CurrentCount + reservedCount) < _jailFacility.MaxCapacity;
     }
 
+    // 수령 포인트 — _receivePoint > _queuePoint > self 순 폴백
     private Transform ResolveReceivePoint()
     {
         if (_receivePoint != null)
@@ -361,6 +362,7 @@ public class PrisonerManager : MonoBehaviour
         return transform;
     }
 
+    // 대기열 포인트 — _queuePoint > ResolveReceivePoint 폴백
     private Transform ResolveQueuePoint()
     {
         if (_queuePoint != null)
@@ -369,6 +371,7 @@ public class PrisonerManager : MonoBehaviour
         return ResolveReceivePoint();
     }
 
+    // 감옥 입구 포인트 — JailFacility > Inspector > self 폴백
     private Transform ResolvePrisonEntrancePoint()
     {
         if (_jailFacility != null && _jailFacility.EntrancePoint != null)
@@ -380,6 +383,7 @@ public class PrisonerManager : MonoBehaviour
         return transform;
     }
 
+    // 감옥 내부 포인트 — JailFacility > Inspector > EntrancePoint 폴백
     private Transform ResolvePrisonInsidePoint()
     {
         if (_jailFacility != null && _jailFacility.InsidePoint != null)

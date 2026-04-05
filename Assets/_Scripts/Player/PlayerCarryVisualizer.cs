@@ -67,6 +67,8 @@ public class PlayerCarryVisualizer : MonoBehaviour
             RegisterBinding(_carryBindings[i]);
     }
 
+    // Money/Ore 오프셋 계산에 쓸 우선 자원 결정
+    // Inspector 지정 > IsMoney 탐색 > id="ore" 탐색 > 첫 비-Money 자원 순으로 폴백
     private void ResolvePriorityResources()
     {
         _resolvedOreResource = _oreResource;
@@ -233,6 +235,8 @@ public class PlayerCarryVisualizer : MonoBehaviour
         }
     }
 
+    // Money 뷰 위치를 Ore 스택 루트 기준으로 오버라이드
+    // Ore가 있으면 _moneyBackOffsetWhenOreExists만큼 뒤로 밀어 겹침 방지
     private bool TryGetOverrideWorldPosition(ResourceData resource, CarryBinding binding, int index, out Vector3 worldPosition)
     {
         worldPosition = default;
@@ -250,8 +254,8 @@ public class PlayerCarryVisualizer : MonoBehaviour
         if (root == null)
             return false;
 
-        Vector3 axisRight = GetHorizontalAxis(root.right, Vector3.right);
-        Vector3 axisForward = GetHorizontalAxis(root.forward, Vector3.forward);
+        Vector3 axisRight = FacilityStackUtility.GetHorizontalAxis(root.right, Vector3.right);
+        Vector3 axisForward = FacilityStackUtility.GetHorizontalAxis(root.forward, Vector3.forward);
         Vector3 axisBack = -axisForward;
 
         Vector3 basePosition = root.position;
@@ -264,16 +268,5 @@ public class PlayerCarryVisualizer : MonoBehaviour
 
         worldPosition = basePosition + (Vector3.up * (binding.VerticalSpacing * index));
         return true;
-    }
-
-    private static Vector3 GetHorizontalAxis(Vector3 sourceAxis, Vector3 fallback)
-    {
-        Vector3 axis = sourceAxis;
-        axis.y = 0f;
-
-        if (axis.sqrMagnitude < 0.0001f)
-            axis = fallback;
-
-        return axis.normalized;
     }
 }

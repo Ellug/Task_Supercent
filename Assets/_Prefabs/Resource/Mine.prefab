@@ -155,6 +155,15 @@ MonoBehaviour:
   _yieldResource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
   _yieldAmount: 1
   _maxHp: 2
+  _debrisPrefab: {fileID: 100000, guid: f3f4d6f9b2e1452f927d9a2e6ac5be11, type: 3}
+  _debrisMinCount: 7
+  _debrisMaxCount: 12
+  _debrisSpawnRadius: 0.25
+  _debrisScaleRange: {x: 0.2, y: 0.5}
+  _debrisSpeedRange: {x: 2.5, y: 5.5}
+  _debrisLifetimeRange: {x: 0.35, y: 0.65}
+  _debrisGravity: 14
+  _debrisUpBias: 0.35
 --- !u!1 &5222270604929378945
 GameObject:
   m_ObjectHideFlags: 0

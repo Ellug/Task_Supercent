@@ -333,9 +333,12 @@ MonoBehaviour:
   _view: {fileID: 8253618029180940386}
   _equip: {fileID: 665500000000000001}
   _resourceStack: {fileID: 665500000000000002}
+  _carryVisualizer: {fileID: 665500000000000003}
+  _resourceManager: {fileID: 0}
   _mineForwardDotMin: 0
   _transferTickInterval: 0.05
   _transferAmountPerTick: 1
+  _maxPopupInterval: 2
 --- !u!114 &665500000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -364,7 +367,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b978c9572915aa4b8feea331a98d014, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _slots: []
 --- !u!114 &665500000000000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -380,26 +382,27 @@ MonoBehaviour:
   _resourceStack: {fileID: 665500000000000002}
   _carryBindings:
   - Resource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
-    ViewPrefab: {fileID: 3590217679474135049, guid: 7707969143dc4844abf4ef355085e90c,
-      type: 3}
     StackRoot: {fileID: 910000000000000012}
     Capacity: 30
     VerticalSpacing: 0.35
     LocalOffset: {x: 0, y: 0, z: 0}
   - Resource: {fileID: 11400000, guid: 9d2d67b42a1f4c07a3c4d9b9c4f8e1a2, type: 2}
-    ViewPrefab: {fileID: 3590217679474135049, guid: b1bcc7a5061ac054c9526280708fdb84,
-      type: 3}
     StackRoot: {fileID: 910000000000000012}
     Capacity: 999
     VerticalSpacing: 0.12
     LocalOffset: {x: 0.45, y: 0, z: 0}
   - Resource: {fileID: 11400000, guid: f0b6a9f611784ac28ca98f5e6219d2d0, type: 2}
-    ViewPrefab: {fileID: 3590217679474135049, guid: 8200583960294874ca4f9232faf7f08e,
-      type: 3}
     StackRoot: {fileID: 153659513103456187}
     Capacity: 60
     VerticalSpacing: 0.25
     LocalOffset: {x: 0, y: 0.1, z: 1.1}
-  _oreResource: {fileID: 0}
-  _moneyResource: {fileID: 0}
   _moneyBackOffsetWhenOreExists: 0.45
+  _swayStrength: 0.004
+  _swaySmoothing: 8
+  _swayCurve: 2.1
+  _bounceStrength: 0.008
+  _bounceDamping: 6
+  _transferMoveSpeed: 28
+  _transferArcHeight: 0.22
+  _transferScatter: 0.03
+  _transferSourceOffset: {x: 0, y: 0.1, z: 0}

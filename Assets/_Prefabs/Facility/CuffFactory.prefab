@@ -463,6 +463,8 @@ MonoBehaviour:
   _inputZone: {fileID: 4559565953785167099}
   _consumeInterval: 0.03
   _consumeAmountPerTick: 5
+  _submitMaxCapacity: 50
+  _collectMaxCapacity: 50
   _oreStackRoot: {fileID: 7768317832385299371}
   _oreResource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
   _oreColumnSpacing: 0.75
@@ -471,7 +473,6 @@ MonoBehaviour:
   _collectZone: {fileID: 9042005284013471890}
   _cuffResource: {fileID: 11400000, guid: f0b6a9f611784ac28ca98f5e6219d2d0, type: 2}
   _collectStackRoot: {fileID: 3023016085561477058}
-  _produceInterval: 0.15
   _collectColumnSpacing: 0.45
   _collectLayerSpacing: 0.2
   _collectLocalOffset: {x: 0, y: 0.1, z: 0}
@@ -480,6 +481,10 @@ MonoBehaviour:
   _pathway: {fileID: 5430258289407015717}
   _endpoint: {fileID: 4148351347107128375}
   _railMoveSpeed: 3
+  _maxTextPrefab: {fileID: 6884466541113894, guid: 2c3f1692d9dc61442bb16f0057a4aa80,
+    type: 3}
+  _submitMaxLabelOffset: {x: 0, y: 2, z: 0}
+  _collectMaxLabelOffset: {x: 0, y: 2, z: 0}
 --- !u!1001 &4248664388136697082
 PrefabInstance:
   m_ObjectHideFlags: 0

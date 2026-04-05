@@ -2,13 +2,19 @@ using UnityEngine;
 
 // MinerManager가 할당한 Mine을 찾아 이동/채굴하는 NPC
 // 채굴 산출물은 MinerManager를 통해 시설로 원격 제출
+[RequireComponent(typeof(AudioSource))]
 public class Miner : NPC
 {
+    private const int MineHitSfxId = 3;
+
     [Header("Mining")]
     [SerializeField, Min(0.05f)] private float _mineInterval = 1f;
     [SerializeField, Min(1)] private int _mineDamage = 1;
     [SerializeField, Min(0f)] private float _mineArriveDistance = 0.8f;
     [SerializeField, Min(0f)] private float _mineExtraDistance = 0.5f;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource _mineSfxSource;
 
     private MinerWaitState _waitState;
     private MinerMoveToMineState _moveToMineState;
@@ -17,6 +23,13 @@ public class Miner : NPC
     private MinerManager _manager;
     private Mine _targetMine;
     private bool _isWorking;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        if (_mineSfxSource == null)
+            _mineSfxSource = GetComponent<AudioSource>();
+    }
 
     protected override void BuildStates()
     {
@@ -111,6 +124,9 @@ public class Miner : NPC
             ClearTargetMine();
             return;
         }
+
+        if (AudioManager.IsInMainCameraView(transform.position))
+            AudioManager.TryPlaySFXViaSource(MineHitSfxId, _mineSfxSource);
 
         if (!_targetMine.TryMine(MineDamage, out ResourceData yieldResource, out int yieldAmount))
             return;

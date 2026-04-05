@@ -7,6 +7,7 @@ public class CuffFactory : FacilityBase
 {
     private const int ProduceConsumeAmountPerCycle = 1;
     private const float ProduceIntervalSeconds = 0.5f;
+    private const int CuffSpawnSfxId = 1;
 
     [Header("Capacity")]
     [SerializeField, Min(1)] private int _submitMaxCapacity = 50;
@@ -131,7 +132,10 @@ public class CuffFactory : FacilityBase
 
         // 레일이 있으면 생산 시 뷰를 레일에 올리고, endpoint 도달 시 CollectZone 적재
         if (_productionRuntime.TryConsume(_oreInputViews, ProduceConsumeAmountPerCycle))
+        {
+            TryPlayCuffSpawnSfx();
             _railRuntime.Launch(() => _cuffOutputRuntime.Add(ProduceConsumeAmountPerCycle));
+        }
     }
 
     // 스폰된 뷰 오브젝트 전체 반환
@@ -218,5 +222,18 @@ public class CuffFactory : FacilityBase
             throw new InvalidOperationException("[CuffFactory] _collectZone is required.");
 
         ValidateResourceBindingsOrThrow();
+    }
+
+    // 스폰 포인트가 화면 안일 때만 생산 SFX 재생
+    private void TryPlayCuffSpawnSfx()
+    {
+        if (_spawnPoint == null)
+            return;
+
+        Vector3 spawnPosition = _spawnPoint.position;
+        if (!AudioManager.IsInMainCameraView(spawnPosition))
+            return;
+
+        AudioManager.TryPlayWorldSFX(CuffSpawnSfxId, spawnPosition);
     }
 }

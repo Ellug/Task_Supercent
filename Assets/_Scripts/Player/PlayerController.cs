@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,6 +10,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
 {
     private const string PlayerMapName = "Player";
     private const string MoveActionName = "Move";
+    private const int CarryTransferSfxId = 0;
 
     [Header("Input")]
     [SerializeField] private InputActionAsset _inputActions;
@@ -33,6 +35,7 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     private bool _isInMaxLoop;
     private float _nextMaxPopupTime;
     private Vector2 _lastMoveInput;
+    private readonly Dictionary<ResourceData, int> _lastCarryCountByResource = new();
 
     public EquipBase Equip => _equip;
     public ResourceStack CarryStack => _resourceStack;
@@ -58,11 +61,13 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     void OnEnable()
     {
         ToggleMoveAction(true);
+        _resourceStack.Changed += OnCarryStackChanged;
     }
 
     void OnDisable()
     {
         ToggleMoveAction(false);
+        _resourceStack.Changed -= OnCarryStackChanged;
         _view.StopMove();
         _lastMoveInput = Vector2.zero;
     }
@@ -176,5 +181,17 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     private bool TryAddCarriedResource(ResourceData resource, int amount, out int added)
     {
         return _resourceStack.TryAdd(resource, amount, out added) && added > 0;
+    }
+
+    // 플레이어 캐리 스택 증감 시 입출력 SFX 재생
+    private void OnCarryStackChanged(ResourceData resource, int newCount, int capacity)
+    {
+        int previous = _lastCarryCountByResource.TryGetValue(resource, out int value) ? value : 0;
+        _lastCarryCountByResource[resource] = newCount;
+
+        if (newCount == previous)
+            return;
+
+        AudioManager.TryPlaySFX(CarryTransferSfxId);
     }
 }

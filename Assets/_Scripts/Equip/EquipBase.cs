@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class EquipBase : MonoBehaviour
 {
+    private const int MineHitSfxId = 3;
+    private const string PickaxeIdPrefix = "pickaxe";
+
     [SerializeField] private Transform _equipAnchor;
     [SerializeField] private EquipLevelLibrary _levelLibrary;
     [SerializeField] private int _startLevel = 0;
@@ -117,12 +120,21 @@ public class EquipBase : MonoBehaviour
 
         _nextMineTime = now + _currentEquip.MineInterval;
         _presentation?.PlayMineAction(mine.transform.position);
+        if (IsPickaxeEquip(_currentEquip))
+            AudioManager.TryPlayWorldSFX(MineHitSfxId, transform.position);
 
         depleted = mine.TryMine(_mineDamage, out yieldResource, out yieldAmount);
         if (depleted)
             _presentation?.PlayMineDepleted(mine.transform.position);
 
         return true;
+    }
+
+    private static bool IsPickaxeEquip(EquipData equip)
+    {
+        return equip != null &&
+               !string.IsNullOrEmpty(equip.Id) &&
+               equip.Id.StartsWith(PickaxeIdPrefix, StringComparison.OrdinalIgnoreCase);
     }
 
     // mine이 현재 장비 사거리 안에 있는지 확인

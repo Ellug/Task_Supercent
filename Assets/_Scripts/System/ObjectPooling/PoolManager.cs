@@ -73,7 +73,12 @@ public class PoolManager : MonoBehaviour
             poolable.OnDespawned();
 
         instance.SetActive(false);
-        _poolMap[instance.GetComponent<PoolMember>().PrefabKey].Enqueue(instance);
+
+        GameObject prefabKey = instance.GetComponent<PoolMember>().PrefabKey;
+        if (_rootMap.TryGetValue(prefabKey, out Transform root) && root != null)
+            instance.transform.SetParent(root, worldPositionStays: false);
+
+        _poolMap[prefabKey].Enqueue(instance);
     }
 
     // 프리팹 전용 큐 추가

@@ -21,6 +21,7 @@ public class EquipBase : MonoBehaviour
 
     public int CurrentLevel => _currentLevel;
     public EquipData CurrentEquip => _currentEquip;
+    public bool IsPickaxe => IsPickaxeEquip(_currentEquip);
 
     public event Action<int, EquipData> LevelChanged;
     public event Action Mined;

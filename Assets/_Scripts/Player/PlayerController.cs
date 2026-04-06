@@ -190,27 +190,35 @@ public class PlayerController : MonoBehaviour, IInteractionActor
         if (!hasMineInRange) return;
 
         ResourceData predictedResource = mine.YieldResource;
+        bool isFull = predictedResource != null && _resourceStack.GetRemaining(predictedResource) <= 0;
 
-        // 적재 공간이 없으면 채굴 중단
-        if (predictedResource != null && _resourceStack.GetRemaining(predictedResource) <= 0)
+        if (isFull)
         {
             if (!_isInMaxLoop || Time.time >= _nextMaxPopupTime)
             {
-                // 적재 한도 도달 팝업 출력
                 MaxPopupUI.Instance.ShowAt(transform);
                 _nextMaxPopupTime = Time.time + Mathf.Max(0f, _maxPopupInterval);
             }
 
             _isInMaxLoop = true;
-            return;
-        }
 
-        _isInMaxLoop = false;
+            // 곡괭이는 MAX면 채굴 중단, 드릴/불도저는 채굴(파괴)은 수행
+            if (_equip.IsPickaxe)
+                return;
+        }
+        else
+        {
+            _isInMaxLoop = false;
+        }
 
         if (!_equip.TryMine(mine, out ResourceData yieldResource, out int yieldAmount, out bool depleted))
             return;
 
         if (!depleted || yieldResource == null || yieldAmount <= 0)
+            return;
+
+        // MAX 상태면 Stack 적재 생략
+        if (isFull)
             return;
 
         if (!TryAddCarriedResource(yieldResource, yieldAmount, out int added))

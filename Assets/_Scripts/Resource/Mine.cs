@@ -56,6 +56,7 @@ public class Mine : MonoBehaviour, IPoolable
         yieldResource = _yieldResource;
         yieldAmount = Mathf.Max(1, _yieldAmount);
         PlayBreakDebrisFx();
+        AudioManager.TryPlayWorldSFX(5, transform.position);
         Depleted?.Invoke(this, yieldResource, yieldAmount);
         return true;
     }

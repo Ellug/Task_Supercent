@@ -200,7 +200,10 @@ public class JailFacility : MonoBehaviour
     private void UpdateCapacityText()
     {
         if (_capacityText != null)
+        {
             _capacityText.text = $"{_currentCount}/{MaxCapacity}";
+            _capacityText.color = _currentCount < MaxCapacity ? Color.white : Color.red;
+        }
     }
 
     private void UpdateDoor()

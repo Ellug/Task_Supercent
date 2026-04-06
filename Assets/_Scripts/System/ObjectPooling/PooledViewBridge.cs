@@ -6,12 +6,7 @@ using UnityEngine;
 public static class PooledViewBridge
 {
     // Pool에서 꺼내거나 Instantiate로 생성 후 parent에 붙여 반환
-    public static GameObject Spawn(
-        GameObject prefab,
-        Vector3 position,
-        Quaternion rotation,
-        Transform parent = null,
-        bool worldPositionStays = true)
+    public static GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform fallbackParent = null)
     {
         if (prefab == null)
             return null;
@@ -21,16 +16,10 @@ public static class PooledViewBridge
         {
             Transform pooledTransform = pool.Spawn(prefab.transform, position, rotation);
             if (pooledTransform != null)
-            {
-                GameObject pooledView = pooledTransform.gameObject;
-                bool keepWorldPosition = parent == null || worldPositionStays;
-                pooledView.transform.SetParent(parent, keepWorldPosition);
-
-                return pooledView;
-            }
+                return pooledTransform.gameObject;
         }
 
-        return Object.Instantiate(prefab, position, rotation, parent);
+        return Object.Instantiate(prefab, position, rotation, fallbackParent);
     }
 
     // Pool 소속이면 Despawn, 아니면 Destroy

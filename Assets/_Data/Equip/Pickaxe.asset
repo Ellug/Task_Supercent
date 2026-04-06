@@ -16,7 +16,7 @@ MonoBehaviour:
   _icon: {fileID: 0}
   _playerViewPrefab: {fileID: 100100000000000001, guid: 0e9021a886f14503b015000a64d2cad3,
     type: 3}
-  _price: 0
   _mineRange: 3.5
-  _mineInterval: 0.1
+  _mineInterval: 0.4
   _simultaneousMineCount: 1
+  _carryCapacityBonus: 0

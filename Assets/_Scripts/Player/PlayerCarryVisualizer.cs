@@ -215,7 +215,7 @@ public class PlayerCarryVisualizer : MonoBehaviour
         Transform root = binding.StackRoot;
         while (views.Count < targetCount)
         {
-            GameObject view = PooledViewBridge.Spawn(resource.WorldViewPrefab, root.position, root.rotation, root, false);
+            GameObject view = PooledViewBridge.Spawn(resource.WorldViewPrefab, root.position, root.rotation, root);
             views.Add(view);
             TriggerStackBounce(view);
         }
@@ -269,7 +269,7 @@ public class PlayerCarryVisualizer : MonoBehaviour
         if (resource == null || resource.WorldViewPrefab == null)
             return;
 
-        GameObject view = PooledViewBridge.Spawn(resource.WorldViewPrefab, start, startRotation, null, true);
+        GameObject view = PooledViewBridge.Spawn(resource.WorldViewPrefab, start, startRotation);
         if (view == null)
             return;
 

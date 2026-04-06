@@ -40,9 +40,7 @@ public sealed class CuffRailRuntime
         GameObject view = PooledViewBridge.Spawn(
             _resource.WorldViewPrefab,
             _spawnPoint.position,
-            _spawnPoint.rotation,
-            null,
-            true);
+            _spawnPoint.rotation);
 
         _runner.StartCoroutine(MoveAlongRail(view, onArrived));
     }

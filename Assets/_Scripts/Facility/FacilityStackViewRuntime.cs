@@ -133,7 +133,7 @@ public sealed class FacilityStackViewRuntime
     private void SpawnView(GameObject prefab, int index)
     {
         Vector3 position = GetWorldPosition(index);
-        GameObject view = PooledViewBridge.Spawn(prefab, position, _rotation, _spawnRoot, true);
+        GameObject view = PooledViewBridge.Spawn(prefab, position, _rotation, _spawnRoot);
         _views.Add(view);
         _onViewSpawned?.Invoke(view);
     }

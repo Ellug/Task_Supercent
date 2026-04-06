@@ -180,7 +180,7 @@ public class Worker : NPC
 
         while (_carryViews.Count < CarriedAmount)
         {
-            GameObject view = PooledViewBridge.Spawn(carryPrefab, transform.position, Quaternion.identity, ResolveCarryRoot(), true);
+            GameObject view = PooledViewBridge.Spawn(carryPrefab, transform.position, Quaternion.identity, ResolveCarryRoot());
             if (view == null)
                 break;
 

@@ -105,9 +105,7 @@ public class Mine : MonoBehaviour, IPoolable
             GameObject debrisView = PooledViewBridge.Spawn(
                 _debrisPrefab,
                 spawnPosition,
-                UnityEngine.Random.rotation,
-                null,
-                true);
+                UnityEngine.Random.rotation);
             if (debrisView == null)
                 continue;
 

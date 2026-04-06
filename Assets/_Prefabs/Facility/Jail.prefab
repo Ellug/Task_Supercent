@@ -49,12 +49,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _entrancePoint: {fileID: 0}
-  _insidePoint: {fileID: 0}
+  _gridArea1: {fileID: 0}
+  _gridArea2: {fileID: 0}
   _door: {fileID: 1139172328159233691}
   _level2Wall: {fileID: 8341689698088975399}
   _maxCapacity: 20
   _currentCount: 0
-  _upgradeCapacity: 40
   _capacityText: {fileID: 1290206463877112805}
   _doorSpeed: 4
 --- !u!1 &1439832307197312263
@@ -160,7 +160,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2357201849532219615}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 7.87}
+  m_LocalPosition: {x: 0, y: 0, z: 6.37}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -537,7 +537,7 @@ Transform:
   m_GameObject: {fileID: 8341689698088975399}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 8.25}
+  m_LocalPosition: {x: 0, y: 1, z: 6.75}
   m_LocalScale: {x: 10, y: 2, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []

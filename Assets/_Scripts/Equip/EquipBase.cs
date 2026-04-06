@@ -7,6 +7,7 @@ public class EquipBase : MonoBehaviour
     private const string PickaxeIdPrefix = "pickaxe";
 
     [SerializeField] private Transform _equipAnchor;
+    [SerializeField] private Transform _pickaxeAnchor;
     [SerializeField] private EquipLevelLibrary _levelLibrary;
     [SerializeField] private int _startLevel = 0;
     [SerializeField] private int _mineDamage = 1;
@@ -22,6 +23,7 @@ public class EquipBase : MonoBehaviour
     public EquipData CurrentEquip => _currentEquip;
 
     public event Action<int, EquipData> LevelChanged;
+    public event Action Mined;
 
     public EquipData GetDataById(string id)
     {
@@ -121,7 +123,10 @@ public class EquipBase : MonoBehaviour
         _nextMineTime = now + _currentEquip.MineInterval;
         _presentation?.PlayMineAction(mine.transform.position);
         if (IsPickaxeEquip(_currentEquip))
+        {
             AudioManager.TryPlayWorldSFX(MineHitSfxId, transform.position);
+            Mined?.Invoke();
+        }
 
         depleted = mine.TryMine(_mineDamage, out yieldResource, out yieldAmount);
         if (depleted)
@@ -171,10 +176,19 @@ public class EquipBase : MonoBehaviour
         if (viewPrefab == null)
             return;
 
-        _currentViewInstance = Instantiate(viewPrefab, _equipAnchor);
+        Transform anchor = (IsPickaxeEquip(_currentEquip) && _pickaxeAnchor != null) ? _pickaxeAnchor : _equipAnchor;
+        _currentViewInstance = Instantiate(viewPrefab, anchor);
         _currentViewInstance.transform.localPosition = Vector3.zero;
-        _currentViewInstance.transform.localRotation = Quaternion.identity;
-        _currentViewInstance.transform.localScale = Vector3.one;
+        _currentViewInstance.transform.localRotation = IsPickaxeEquip(_currentEquip)
+            ? Quaternion.Euler(90f, 0f, 0f)
+            : Quaternion.identity;
+
+        // 부모 스케일에 관계없이 월드 스케일 1,1,1 유지
+        Vector3 parentLossyScale = anchor.lossyScale;
+        _currentViewInstance.transform.localScale = new Vector3(
+            parentLossyScale.x == 0f ? 1f : 1f / parentLossyScale.x,
+            parentLossyScale.y == 0f ? 1f : 1f / parentLossyScale.y,
+            parentLossyScale.z == 0f ? 1f : 1f / parentLossyScale.z);
 
         _presentation = _currentViewInstance.GetComponentInChildren<EquipPresentationBase>(true);
         _presentation?.OnEquipped(_equipAnchor, _currentEquip);

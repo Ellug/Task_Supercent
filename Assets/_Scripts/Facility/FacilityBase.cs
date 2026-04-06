@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 // 시설 공통 베이스 — InputZone의 자원을 인터벌마다 소비해 처리
@@ -9,7 +11,12 @@ public abstract class FacilityBase : MonoBehaviour
     [SerializeField, Min(0f)] private float _consumeInterval = 0.02f;
     [SerializeField, Min(1)] private int _consumeAmountPerTick = 5;
 
+    [Header("Stack Bounce")]
+    [SerializeField, Min(0f)] private float _stackBounceDuration = 0.2f;
+    [SerializeField] private float _stackBounceScale = 1.1f;
+
     private float _nextConsumeTime;
+    private readonly Dictionary<GameObject, Coroutine> _bounceCoroutines = new();
 
     protected InteractionZone InputZone => _inputZone;
     public InteractionZone BoundInputZone => _inputZone;
@@ -63,6 +70,55 @@ public abstract class FacilityBase : MonoBehaviour
 
         consumeAmount = Mathf.Min(available, remainingCapacity, ConsumeAmountPerTick);
         return consumeAmount > 0;
+    }
+
+    // FacilityStackViewRuntime에 bounce 콜백 연결
+    protected void RegisterStackBounce(FacilityStackViewRuntime runtime)
+    {
+        runtime?.SetOnViewSpawned(TriggerStackBounce);
+    }
+
+    private void TriggerStackBounce(GameObject view)
+    {
+        if (view == null || _stackBounceDuration <= 0f)
+            return;
+
+        if (_bounceCoroutines.TryGetValue(view, out Coroutine existing) && existing != null)
+            StopCoroutine(existing);
+
+        _bounceCoroutines[view] = StartCoroutine(BounceCoroutine(view));
+    }
+
+    private IEnumerator BounceCoroutine(GameObject view)
+    {
+        if (view == null)
+            yield break;
+
+        float half = _stackBounceDuration * 0.5f;
+        float elapsed = 0f;
+
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            if (view != null)
+                view.transform.localScale = Vector3.one * Mathf.LerpUnclamped(1f, _stackBounceScale, elapsed / half);
+            yield return null;
+        }
+
+        elapsed = 0f;
+
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            if (view != null)
+                view.transform.localScale = Vector3.one * Mathf.LerpUnclamped(_stackBounceScale, 1f, elapsed / half);
+            yield return null;
+        }
+
+        if (view != null)
+            view.transform.localScale = Vector3.one;
+
+        _bounceCoroutines.Remove(view);
     }
 
     // 해당 자원을 소비할 수 있는지 판단 — 서브클래스에서 조건 추가 가능

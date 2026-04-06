@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ public sealed class FacilityStackViewRuntime
     private readonly Quaternion _rotation;
 
     private readonly List<GameObject> _views = new();
+    private Action<GameObject> _onViewSpawned;
 
     public FacilityStackViewRuntime(
         Transform stackRoot,
@@ -123,11 +125,17 @@ public sealed class FacilityStackViewRuntime
         _views.Clear();
     }
 
+    public void SetOnViewSpawned(Action<GameObject> callback)
+    {
+        _onViewSpawned = callback;
+    }
+
     private void SpawnView(GameObject prefab, int index)
     {
         Vector3 position = GetWorldPosition(index);
         GameObject view = PooledViewBridge.Spawn(prefab, position, _rotation, _spawnRoot, true);
         _views.Add(view);
+        _onViewSpawned?.Invoke(view);
     }
 
     private Vector3 GetWorldPosition(int index)

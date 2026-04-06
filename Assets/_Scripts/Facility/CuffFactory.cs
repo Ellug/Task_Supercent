@@ -85,6 +85,9 @@ public class CuffFactory : FacilityBase
             null,
             Vector3.zero);
 
+        RegisterStackBounce(_oreInputViews);
+        RegisterStackBounce(cuffOutputViews);
+
         _cuffOutputRuntime = new FacilityZoneOutputRuntime(_collectZone, cuffOutputViews);
         _productionRuntime = new FacilityTimedProductionRuntime(ProduceIntervalSeconds);
         _submitZoneCapacityRuntime = new FacilityZoneCapacityRuntime(InputZone, _submitMaxCapacity, true);

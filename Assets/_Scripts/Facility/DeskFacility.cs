@@ -57,6 +57,7 @@ public class DeskFacility : FacilityBase
             null,
             Vector3.zero);
 
+        RegisterStackBounce(cuffInputViews);
         _prisonerSupplyRuntime = new DeskPrisonerSupplyRuntime(cuffInputViews, MaxCuffPerPrisoner);
 
         FacilityStackViewRuntime moneyOutputViews = new(
@@ -74,6 +75,7 @@ public class DeskFacility : FacilityBase
             collectZoneCollider,
             _moneyViewEulerAngles);
 
+        RegisterStackBounce(moneyOutputViews);
         _moneyOutputRuntime = new FacilityZoneOutputRuntime(_collectZone, moneyOutputViews);
     }
 

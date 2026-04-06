@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,6 +28,10 @@ public class PlayerCarryVisualizer : MonoBehaviour
     [SerializeField, Min(0f)] private float _transferScatter = 0.03f;
     [SerializeField] private Vector3 _transferSourceOffset = new(0f, 0.1f, 0f);
 
+    [Header("Stack Bounce")]
+    [SerializeField, Min(0f)] private float _stackBounceDuration = 0.2f;
+    [SerializeField] private float _stackBounceScale = 1.1f;
+
     private sealed class TransferFlight
     {
         public GameObject View;
@@ -45,6 +50,8 @@ public class PlayerCarryVisualizer : MonoBehaviour
     private readonly Dictionary<ResourceData, List<GameObject>> _spawnedViewsByResource = new();
     private readonly List<ResourceData> _resourceKeyBuffer = new();
     private readonly List<TransferFlight> _transferFlights = new();
+    // 바운스 중인 뷰의 원래 스케일 추적 (바운스 완료 후 복원)
+    private readonly Dictionary<GameObject, Coroutine> _bounceCoroutines = new();
 
     private PlayerCarryConfig _config;
     private PlayerCarrySwayCalculator _sway;
@@ -210,6 +217,7 @@ public class PlayerCarryVisualizer : MonoBehaviour
         {
             GameObject view = PooledViewBridge.Spawn(resource.WorldViewPrefab, root.position, root.rotation, root, false);
             views.Add(view);
+            TriggerStackBounce(view);
         }
 
         PlaceResourceViews(resource, binding);
@@ -313,6 +321,53 @@ public class PlayerCarryVisualizer : MonoBehaviour
             PooledViewBridge.Release(flight.View);
             _transferFlights.RemoveAt(i);
         }
+    }
+
+    private void TriggerStackBounce(GameObject view)
+    {
+        if (view == null || _stackBounceDuration <= 0f)
+            return;
+
+        if (_bounceCoroutines.TryGetValue(view, out Coroutine existing) && existing != null)
+            StopCoroutine(existing);
+
+        _bounceCoroutines[view] = StartCoroutine(BounceCoroutine(view));
+    }
+
+    private IEnumerator BounceCoroutine(GameObject view)
+    {
+        if (view == null)
+            yield break;
+
+        float half = _stackBounceDuration * 0.5f;
+        float elapsed = 0f;
+
+        // 1→peak
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / half;
+            if (view != null)
+                view.transform.localScale = Vector3.one * Mathf.LerpUnclamped(1f, _stackBounceScale, t);
+            yield return null;
+        }
+
+        elapsed = 0f;
+
+        // peak→1
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / half;
+            if (view != null)
+                view.transform.localScale = Vector3.one * Mathf.LerpUnclamped(_stackBounceScale, 1f, t);
+            yield return null;
+        }
+
+        if (view != null)
+            view.transform.localScale = Vector3.one;
+
+        _bounceCoroutines.Remove(view);
     }
 
     private bool TryGetBinding(ResourceData resource, out CarryBinding binding)

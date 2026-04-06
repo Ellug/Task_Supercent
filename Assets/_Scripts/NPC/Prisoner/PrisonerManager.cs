@@ -59,6 +59,7 @@ public class PrisonerManager : MonoBehaviour
     {
         EnsureQueueFilled();
         TrySupplyReceivePrisoner();
+        RefreshReceivePrisonerBubble();
         ProcessReceivePrisoner();
         ProcessEntWaitQueue();
     }
@@ -112,6 +113,8 @@ public class PrisonerManager : MonoBehaviour
             return;
 
         Prisoner departing = _receiveSlot.Prisoner;
+        if (PrisonerReceiveBubbleUI.Instance != null)
+            PrisonerReceiveBubbleUI.Instance.HideFor(departing);
         _receiveSlot = null;
 
         _deskFacility.TryAddMoneyRewardForPrisonerPass();
@@ -227,6 +230,8 @@ public class PrisonerManager : MonoBehaviour
         if (_deskFacility != null)
             _deskFacility.ResetPrisonerCuff(slot.Prisoner);
 
+        if (PrisonerReceiveBubbleUI.Instance != null)
+            PrisonerReceiveBubbleUI.Instance.HideFor(slot.Prisoner);
         slot.Prisoner.MoveToReceive();
     }
 
@@ -234,6 +239,8 @@ public class PrisonerManager : MonoBehaviour
     private void ConfigureAsQueueSlot(QueueRuntime slot)
     {
         slot.ResetState();
+        if (PrisonerReceiveBubbleUI.Instance != null)
+            PrisonerReceiveBubbleUI.Instance.HideFor(slot.Prisoner);
         slot.Prisoner.SetQueuePoint(ResolveQueuePoint());
         slot.Prisoner.SetReceivePoint(ResolveReceivePoint());
         slot.Prisoner.MoveToQueue();
@@ -245,6 +252,11 @@ public class PrisonerManager : MonoBehaviour
             return;
 
         _receiveSlot.ReadyForSupply = true;
+
+        int maxCuff = _deskFacility != null ? _deskFacility.MaxCuffPerPrisoner : 1;
+        int currentCuff = _deskFacility != null ? _deskFacility.GetPrisonerCuff(prisoner) : 0;
+        if (PrisonerReceiveBubbleUI.Instance != null)
+            PrisonerReceiveBubbleUI.Instance.ShowFor(prisoner, currentCuff, maxCuff);
     }
 
     private void OnArrivedAtPrisonPoint(Prisoner prisoner)
@@ -319,6 +331,9 @@ public class PrisonerManager : MonoBehaviour
         if (prisoner == null)
             return;
 
+        if (PrisonerReceiveBubbleUI.Instance != null)
+            PrisonerReceiveBubbleUI.Instance.HideFor(prisoner);
+
         _entWaitQueue.Remove(prisoner);
         _movingToJailSlot.Remove(prisoner);
         ReleaseEntSlot(prisoner);
@@ -349,6 +364,31 @@ public class PrisonerManager : MonoBehaviour
         _queueSlot = SpawnQueueSlot();
     }
 
+    private void RefreshReceivePrisonerBubble()
+    {
+        if (_receiveSlot == null || _receiveSlot.Prisoner == null)
+            return;
+
+        if (!_receiveSlot.ReadyForSupply)
+        {
+            if (PrisonerReceiveBubbleUI.Instance != null)
+                PrisonerReceiveBubbleUI.Instance.HideFor(_receiveSlot.Prisoner);
+            return;
+        }
+
+        if (_deskFacility == null)
+        {
+            if (PrisonerReceiveBubbleUI.Instance != null)
+                PrisonerReceiveBubbleUI.Instance.UpdateFor(_receiveSlot.Prisoner, 0, 1);
+            return;
+        }
+
+        int maxCuff = _deskFacility.MaxCuffPerPrisoner;
+        int currentCuff = _deskFacility.GetPrisonerCuff(_receiveSlot.Prisoner);
+        if (PrisonerReceiveBubbleUI.Instance != null)
+            PrisonerReceiveBubbleUI.Instance.UpdateFor(_receiveSlot.Prisoner, currentCuff, maxCuff);
+    }
+
     private Transform ResolveReceivePoint() =>
         _receivePoint != null ? _receivePoint : transform;
 
@@ -368,4 +408,41 @@ public class PrisonerManager : MonoBehaviour
     }
 
     private bool IsJailOpen => _jailFacility == null || _jailFacility.IsOpen;
+
+    // 카메라/가이드 연출용으로 표시 가능한 Prisoner 1명 반환
+    public bool TryGetGuidePrisoner(out Prisoner prisoner)
+    {
+        if (_entWaitQueue.TryPeek(out prisoner) && prisoner != null)
+            return true;
+
+        if (_movingToJailEntrance != null)
+        {
+            prisoner = _movingToJailEntrance;
+            return true;
+        }
+
+        if (_receiveSlot != null && _receiveSlot.Prisoner != null)
+        {
+            prisoner = _receiveSlot.Prisoner;
+            return true;
+        }
+
+        if (_queueSlot != null && _queueSlot.Prisoner != null)
+        {
+            prisoner = _queueSlot.Prisoner;
+            return true;
+        }
+
+        foreach (Prisoner moving in _movingToJailSlot)
+        {
+            if (moving == null)
+                continue;
+
+            prisoner = moving;
+            return true;
+        }
+
+        prisoner = null;
+        return false;
+    }
 }

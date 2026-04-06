@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 // 감옥 수용 상태 관리
@@ -11,7 +12,10 @@ public class JailFacility : MonoBehaviour
 {
     [Header("Points")]
     [SerializeField] private Transform _entrancePoint;
-    [SerializeField] private Transform _insidePoint;
+
+    [Header("Grid Areas")]
+    [SerializeField] private NpcGridArea _gridArea1;   // 레벨 1 수용 영역
+    [SerializeField] private NpcGridArea _gridArea2;   // 레벨 2 수용 영역 (업그레이드 후 개방)
 
     [Header("Objects")]
     [SerializeField] private Transform _door;
@@ -20,7 +24,9 @@ public class JailFacility : MonoBehaviour
     [Header("Capacity")]
     [SerializeField, Min(1)] private int _maxCapacity = 20;
     [SerializeField, Min(0)] private int _currentCount;
-    [SerializeField, Min(1)] private int _upgradeCapacity = 40;
+
+    [Header("UI")]
+    [SerializeField] private TMP_Text _capacityText;
 
     [Header("Door Animation")]
     [SerializeField, Min(0.01f)] private float _doorSpeed = 4f;
@@ -28,9 +34,13 @@ public class JailFacility : MonoBehaviour
     private Prisoner _entryOwner;
     private Coroutine _doorCoroutine;
 
+    // 슬롯 인덱스 추적 (Prisoner → (gridIndex 0/1, slotIndex))
+    private readonly System.Collections.Generic.Dictionary<Prisoner, (int grid, int slot)> _prisonerSlots = new();
+    private bool _upgraded;
+
     public Transform EntrancePoint => _entrancePoint != null ? _entrancePoint : transform;
-    public Transform InsidePoint => _insidePoint != null ? _insidePoint : EntrancePoint;
-    public int MaxCapacity => Mathf.Max(1, _maxCapacity);
+    public int MaxCapacity => TotalGridCapacity > 0 ? TotalGridCapacity : Mathf.Max(1, _maxCapacity);
+    private int TotalGridCapacity => (_gridArea1 != null ? _gridArea1.Capacity : 0) + (_upgraded && _gridArea2 != null ? _gridArea2.Capacity : 0);
     public int CurrentCount => _currentCount;
     public bool IsOpen => _currentCount < MaxCapacity;
     public event System.Action<JailFacility> StateChanged;
@@ -68,9 +78,11 @@ public class JailFacility : MonoBehaviour
         return true;
     }
 
-    // 내부 도착 시 수용 확정 (count + 1)
-    public bool CommitEnter(Prisoner prisoner)
+    // 내부 도착 시 슬롯 배정 및 수용 확정, 배정된 슬롯 위치를 slotPosition으로 반환
+    public bool CommitEnter(Prisoner prisoner, out Vector3 slotPosition)
     {
+        slotPosition = Vector3.zero;
+
         if (prisoner == null)
             return false;
 
@@ -86,6 +98,22 @@ public class JailFacility : MonoBehaviour
             return false;
         }
 
+        // 그리드 슬롯 배정 — 1영역 먼저, 가득 차면 2영역
+        if (_gridArea1 != null && _gridArea1.ClaimSlot(out int slotIndex1, out Vector3 worldPos1, out _))
+        {
+            _prisonerSlots[prisoner] = (0, slotIndex1);
+            slotPosition = worldPos1;
+        }
+        else if (_upgraded && _gridArea2 != null && _gridArea2.ClaimSlot(out int slotIndex2, out Vector3 worldPos2, out _))
+        {
+            _prisonerSlots[prisoner] = (1, slotIndex2);
+            slotPosition = worldPos2;
+        }
+        else
+        {
+            slotPosition = EntrancePoint.position;
+        }
+
         _currentCount = Mathf.Min(MaxCapacity, _currentCount + 1);
         if (_entryOwner == prisoner)
             _entryOwner = null;
@@ -93,6 +121,23 @@ public class JailFacility : MonoBehaviour
         NotifyStateChanged();
         LogState("Enter");
         return true;
+    }
+
+    // 감옥에서 죄수 제거 및 슬롯 반환
+    public void RemovePrisoner(Prisoner prisoner)
+    {
+        if (prisoner == null)
+            return;
+
+        if (_prisonerSlots.TryGetValue(prisoner, out var entry))
+        {
+            if (entry.grid == 0) _gridArea1?.ReleaseSlot(entry.slot);
+            else _gridArea2?.ReleaseSlot(entry.slot);
+            _prisonerSlots.Remove(prisoner);
+        }
+
+        _currentCount = Mathf.Max(0, _currentCount - 1);
+        NotifyStateChanged();
     }
 
     public void CancelEntrance(Prisoner prisoner)
@@ -104,7 +149,14 @@ public class JailFacility : MonoBehaviour
     // 필요 시 외부에서 초기화/재설정
     public void ResetState(int currentCount = 0)
     {
-        _currentCount = Mathf.Clamp(currentCount, 0, MaxCapacity);
+        foreach (var kv in _prisonerSlots)
+        {
+            if (kv.Value.grid == 0) _gridArea1?.ReleaseSlot(kv.Value.slot);
+            else _gridArea2?.ReleaseSlot(kv.Value.slot);
+        }
+
+        _prisonerSlots.Clear();
+        _currentCount = 0;
         _entryOwner = null;
         NotifyStateChanged();
         LogState("Reset");
@@ -123,19 +175,32 @@ public class JailFacility : MonoBehaviour
         return true;
     }
 
-    // _upgradeCapacity로 최대 수용량 업그레이드
+    // 레벨 2 영역 개방 및 벽 제거
     public bool Upgrade()
     {
-        bool upgraded = SetMaxCapacity(_upgradeCapacity);
-        if (upgraded && _level2Wall != null)
+        if (_upgraded)
+            return false;
+
+        _upgraded = true;
+        if (_level2Wall != null)
             _level2Wall.SetActive(false);
-        return upgraded;
+
+        NotifyStateChanged();
+        LogState("Upgraded");
+        return true;
     }
 
     private void NotifyStateChanged()
     {
         StateChanged?.Invoke(this);
         UpdateDoor();
+        UpdateCapacityText();
+    }
+
+    private void UpdateCapacityText()
+    {
+        if (_capacityText != null)
+            _capacityText.text = $"{_currentCount}/{MaxCapacity}";
     }
 
     private void UpdateDoor()

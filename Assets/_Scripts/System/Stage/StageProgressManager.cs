@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,6 +24,13 @@ public class StageProgressManager : MonoBehaviour
 
     private bool _jailCapacityUpgradeApplied;
 
+    public bool IsInitialized { get; private set; }
+
+    public event Action Initialized;
+    public event Action<InteractionZone> ZoneStarted;
+    public event Action<InteractionZone> ZoneCompleted;
+    public event Action<bool> JailStateEvaluated;
+
     void OnDestroy()
     {
         ClearRuntimeBindings();
@@ -31,6 +39,8 @@ public class StageProgressManager : MonoBehaviour
     // flowLibrary 기준으로 전체 진행 규칙 초기화
     public void Initialize(InteractionZoneFlowLibrary flowLibrary = null)
     {
+        IsInitialized = false;
+
         if (flowLibrary != null)
             _flowLibrary = flowLibrary;
 
@@ -48,6 +58,8 @@ public class StageProgressManager : MonoBehaviour
 
         BindZoneEvents();
         BindStageStateMonitor();
+        IsInitialized = true;
+        Initialized?.Invoke();
     }
 
     // 모든 Zone Started/Completed 이벤트 구독
@@ -80,6 +92,7 @@ public class StageProgressManager : MonoBehaviour
             return;
 
         _zoneFlowController.OnZoneStarted(zone.ZoneId);
+        ZoneStarted?.Invoke(zone);
     }
 
     // Zone Completed 처리
@@ -91,12 +104,14 @@ public class StageProgressManager : MonoBehaviour
         _zoneFlowController.OnZoneCompleted(zone.ZoneId);
         _purchaseUpgradeService.ApplyForTrigger(zone.ZoneId);
         ApplyZoneCompleteSideEffects(zone);
+        ZoneCompleted?.Invoke(zone);
     }
 
     // Jail open/close 상태 트리거 처리
     private void OnJailStateEvaluated(bool isJailOpen)
     {
         _zoneFlowController.EvaluateJailState(isJailOpen);
+        JailStateEvaluated?.Invoke(isJailOpen);
     }
 
     // Zone 완료 후처리
@@ -134,6 +149,12 @@ public class StageProgressManager : MonoBehaviour
         _purchaseUpgradeService.Clear();
         _zoneRegistry.Clear();
         _jailCapacityUpgradeApplied = false;
+        IsInitialized = false;
+    }
+
+    public bool TryGetZone(InteractionZoneId zoneId, out InteractionZone zone)
+    {
+        return _zoneRegistry.TryGetZone(zoneId, out zone, false);
     }
 
     // BuyJail 완료 시 JailFacility 업그레이드 — 1회만 실행
@@ -153,6 +174,5 @@ public class StageProgressManager : MonoBehaviour
             return;
 
         Debug.Log($"[StageProgressManager] BuyJail completed: max capacity {before} -> {_jailFacility.MaxCapacity}");
-        // TODO: Expand jail area size/layout after Jail upgrade is purchased.
     }
 }

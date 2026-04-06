@@ -1,9 +1,17 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AudioManager : Singleton<AudioManager>
 {
     [SerializeField] private SfxLibrary _sfxLibrary;
     [SerializeField, Range(1, 32)] private int _sfxSourceCount = 8;
+
+    [Header("Mute")]
+    [SerializeField] private Image _muteButtonImage;
+    [SerializeField] private Sprite _normalSprite;
+    [SerializeField] private Sprite _mutedSprite;
+
+    private bool _isMuted;
     [Header("World SFX 3D")]
     [SerializeField, Min(0.05f)] private float _worldSfxMinDistance = 2f;
     [SerializeField, Min(0.1f)] private float _worldSfxMaxDistance = 40f;
@@ -97,6 +105,15 @@ public class AudioManager : Singleton<AudioManager>
 
         return viewport.x >= -margin && viewport.x <= 1f + margin &&
                viewport.y >= -margin && viewport.y <= 1f + margin;
+    }
+
+    public void ToggleMute()
+    {
+        _isMuted = !_isMuted;
+        AudioListener.volume = _isMuted ? 0f : 1f;
+
+        if (_muteButtonImage != null)
+            _muteButtonImage.sprite = _isMuted ? _mutedSprite : _normalSprite;
     }
 
     private void BuildSfxSources()

@@ -185,6 +185,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (12)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -211,7 +216,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &44715812
 Transform:
@@ -312,6 +317,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -379,6 +389,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -466,6 +481,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (15)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -503,6 +523,9 @@ MonoBehaviour:
   _dontDestroyOnLoad: 1
   _sfxLibrary: {fileID: 11400000, guid: 7bd639e965f44a54fad0555cfc0b8f10, type: 2}
   _sfxSourceCount: 8
+  _muteButtonImage: {fileID: 1109953547}
+  _normalSprite: {fileID: 21300000, guid: 8c397268bf3cf794580b6a29330643c4, type: 3}
+  _mutedSprite: {fileID: 21300000, guid: 9bba63356c4433d4a9ac367f2040787a, type: 3}
   _worldSfxMinDistance: 1
   _worldSfxMaxDistance: 10
   _worldSfxSpatialBlend: 0.85
@@ -585,6 +608,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (22)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -659,7 +687,8 @@ Transform:
   m_LocalPosition: {x: 47.02423, y: 0.5, z: 40.0953}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 900100011}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
 --- !u!1 &116055195
@@ -724,7 +753,7 @@ Transform:
   m_GameObject: {fileID: 146758310}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.9108486, y: 13.112435, z: -15.599115}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -761,7 +790,7 @@ Transform:
   m_GameObject: {fileID: 210077335}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.9108486, y: 13.112435, z: -15.599115}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -830,6 +859,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (17)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -897,6 +931,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wall z (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -971,6 +1010,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wall z (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1083,6 +1127,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1103,6 +1152,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 277344275}
+  - component: {fileID: 277344276}
+  - component: {fileID: 277344277}
   m_Layer: 0
   m_Name: Prisoner Ent Point
   m_TagString: Untagged
@@ -1119,12 +1170,49 @@ Transform:
   m_GameObject: {fileID: 277344274}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.38268343, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 6.19, y: 0, z: -22.31}
+  m_LocalPosition: {x: 5.69, y: 0, z: -20.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
+--- !u!65 &277344276
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 277344274}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2, y: 0.2, z: 3}
+  m_Center: {x: 0, y: 0, z: -1}
+--- !u!114 &277344277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 277344274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 943a0d3bd8fb0ef4584dc32d6bcda1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _box: {fileID: 277344276}
+  _rows: 2
+  _cols: 3
+  _fillReverse: 0
 --- !u!4 &281428080 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4131380963407488594, guid: 4211da415cefe8f45993ee4e34805c89,
@@ -1206,6 +1294,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (9)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1229,6 +1322,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Skyblue (12)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5667100268599414869, guid: 4d258b23982b44445a59a4b8aecb4cab,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 8863157744576909034, guid: 4d258b23982b44445a59a4b8aecb4cab,
         type: 3}
@@ -1501,6 +1599,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (9)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1617,6 +1720,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (20)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1634,6 +1742,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Skyblue (10)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5667100268599414869, guid: 4d258b23982b44445a59a4b8aecb4cab,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 8863157744576909034, guid: 4d258b23982b44445a59a4b8aecb4cab,
         type: 3}
@@ -1834,6 +1947,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (16)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1858,6 +1976,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Jail
       objectReference: {fileID: 0}
+    - target: {fileID: 5303725247197055464, guid: e57fd3e7c5098df4e9f27b3d51b1ab94,
+        type: 3}
+      propertyPath: _gridArea
+      value: 
+      objectReference: {fileID: 1626235504}
+    - target: {fileID: 5303725247197055464, guid: e57fd3e7c5098df4e9f27b3d51b1ab94,
+        type: 3}
+      propertyPath: _gridArea1
+      value: 
+      objectReference: {fileID: 1626235504}
+    - target: {fileID: 5303725247197055464, guid: e57fd3e7c5098df4e9f27b3d51b1ab94,
+        type: 3}
+      propertyPath: _gridArea2
+      value: 
+      objectReference: {fileID: 1194078031}
     - target: {fileID: 5303725247197055464, guid: e57fd3e7c5098df4e9f27b3d51b1ab94,
         type: 3}
       propertyPath: _insidePoint
@@ -2253,6 +2386,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Skyblue (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 5667100268599414869, guid: 4d258b23982b44445a59a4b8aecb4cab,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 8863157744576909034, guid: 4d258b23982b44445a59a4b8aecb4cab,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2371,6 +2509,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall x
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: eac58cddf9b21f5498df93be633034c6,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2396,7 +2539,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &457560581
 Transform:
@@ -2476,6 +2619,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2549,6 +2697,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wall z (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2624,6 +2777,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (19)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2691,6 +2849,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wall x (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: eac58cddf9b21f5498df93be633034c6,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2766,6 +2929,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2840,6 +3008,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (14)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2913,6 +3086,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey (10)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3068,6 +3246,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (17)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3136,6 +3319,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3156,7 +3344,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &626451779
 Transform:
@@ -3300,6 +3488,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (14)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3336,7 +3529,7 @@ Transform:
   m_GameObject: {fileID: 716982491}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.778395, y: 5.8342056, z: -18.510967}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3453,6 +3646,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey (20)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3589,6 +3787,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (11)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3618,6 +3821,37 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 7852872446451849991}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &900100010
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 900100011}
+  m_Layer: 0
+  m_Name: Mine Indicater Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &900100011
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100010}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.0000019073486, y: 1.5, z: -37.000004}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 107679266}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &909589431 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3864582692948209263, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
@@ -3787,6 +4021,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (18)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3945,6 +4184,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Skyblue (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 5667100268599414869, guid: 4d258b23982b44445a59a4b8aecb4cab,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 8863157744576909034, guid: 4d258b23982b44445a59a4b8aecb4cab,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -4081,7 +4325,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1109953547}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 107532366}
+        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+        m_MethodName: ToggleMute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1109953547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4189,6 +4445,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4248,7 +4509,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!64 &1181622683
 MeshCollider:
@@ -4400,6 +4661,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (26)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4411,6 +4677,76 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1183039005}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1194078028
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1194078030}
+  - component: {fileID: 1194078029}
+  - component: {fileID: 1194078031}
+  m_Layer: 0
+  m_Name: Prisoner Jail Inside Point2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1194078029
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194078028}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 8, y: 0.2, z: 8}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &1194078030
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194078028}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.9238796, z: -0, w: -0.38268325}
+  m_LocalPosition: {x: 29.878075, y: 0, z: 1.3780823}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 225, z: 0}
+--- !u!114 &1194078031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194078028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 943a0d3bd8fb0ef4584dc32d6bcda1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _box: {fileID: 1194078029}
+  _rows: 4
+  _cols: 5
+  _fillReverse: 0
 --- !u!1001 &1195900484
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4473,6 +4809,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey (21)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4541,6 +4882,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4648,7 +4994,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1254114901
 Transform:
@@ -4758,6 +5104,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (22)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4777,7 +5128,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1349634415
 Transform:
@@ -4871,6 +5222,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (11)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4939,6 +5295,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4964,7 +5325,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1368201666
 Transform:
@@ -5066,6 +5427,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (24)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5133,6 +5499,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wall z (21)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5202,6 +5573,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (23)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5221,7 +5597,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1508035067
 Transform:
@@ -5381,6 +5757,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (16)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5424,8 +5805,8 @@ MonoBehaviour:
   _spawnPoint: {fileID: 116055196}
   _receivePoint: {fileID: 939138568}
   _queuePoint: {fileID: 1575745435}
+  _entGridArea: {fileID: 277344277}
   _prisonEntrancePoint: {fileID: 277344275}
-  _prisonInsidePoint: {fileID: 1626235502}
   _npcRoot: {fileID: 716982492}
   _supplyInterval: 0.05
   _supplyAmountPerTick: 1
@@ -5554,6 +5935,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (9)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5659,6 +6045,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall x (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: eac58cddf9b21f5498df93be633034c6,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5733,6 +6124,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5753,6 +6149,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1626235502}
+  - component: {fileID: 1626235503}
+  - component: {fileID: 1626235504}
   m_Layer: 0
   m_Name: Prisoner Jail Inside Point
   m_TagString: Untagged
@@ -5769,12 +6167,49 @@ Transform:
   m_GameObject: {fileID: 1626235501}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.9238796, z: -0, w: -0.38268325}
-  m_LocalPosition: {x: 19.978582, y: 0, z: -8.521417}
+  m_LocalPosition: {x: 19.0947, y: 0, z: -9.4053}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 225, z: 0}
+--- !u!65 &1626235503
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626235501}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 7, y: 0.2, z: 7}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1626235504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626235501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 943a0d3bd8fb0ef4584dc32d6bcda1c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _box: {fileID: 1626235503}
+  _rows: 4
+  _cols: 5
+  _fillReverse: 0
 --- !u!1001 &1628795623
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5787,6 +6222,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Skyblue (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5667100268599414869, guid: 4d258b23982b44445a59a4b8aecb4cab,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 8863157744576909034, guid: 4d258b23982b44445a59a4b8aecb4cab,
         type: 3}
@@ -5949,6 +6389,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (15)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6022,6 +6467,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6159,6 +6609,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall x (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: eac58cddf9b21f5498df93be633034c6,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6233,6 +6688,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (11)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6306,6 +6766,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wall z (13)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6471,6 +6936,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (25)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6551,6 +7021,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (12)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6619,6 +7094,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (23)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6686,6 +7166,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wall z (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6955,6 +7440,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1915693673}
   - component: {fileID: 1915693672}
+  - component: {fileID: 1915693674}
   m_Layer: 0
   m_Name: StageProgressManager
   m_TagString: Untagged
@@ -6992,6 +7478,41 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1915693674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915693671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5452aaaac849e0a43af6b66093018c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stageProgressManager: {fileID: 1915693672}
+  _playerController: {fileID: 1540641808795954820}
+  _defaultPlayer: {fileID: 1540641808795954830}
+  _mineIndicatorPoint: {fileID: 900100011}
+  _targetCamera: {fileID: 330585545}
+  _oreResource: {fileID: 11400000, guid: d81b7e43232c4ac6bbb85556996da82c, type: 2}
+  _oreTargetAmount: 10
+  _targetWorldOffset: {x: 0, y: 1.2, z: 0}
+  _directionArrowParent: {fileID: 1949545113}
+  _directionArrowPrefab: {fileID: 460000000000000001, guid: 6d2b7b98f7d14d4f90d7d66b44f57cb1,
+    type: 3}
+  _directionSourceOffset: {x: 0, y: 0, z: 0}
+  _directionDistanceOffset: 3
+  _directionArrowRotationOffset: 0
+  _directionArrowTiltX: 45
+  _worldArrowParent: {fileID: 0}
+  _worldArrowPrefab: {fileID: 470000000000000001, guid: 9f244ed01a3e4b0bba7fe2d7cf4a0f1d,
+    type: 3}
+  _worldArrowOffset: {x: 0, y: 3.5, z: 0}
+  _worldArrowRotateSpeed: 180
+  _worldArrowBounceAmplitude: 0.2
+  _worldArrowBounceFrequency: 1.8
+  _worldArrowScale: 0.02
 --- !u!4 &1920253761 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3864582692948209263, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
@@ -7061,6 +7582,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall z (10)
       objectReference: {fileID: 0}
+    - target: {fileID: 5638406578679291721, guid: 348e9aaf746b02e4384fa7c6a19e8c09,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7084,6 +7610,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Skyblue (11)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5667100268599414869, guid: 4d258b23982b44445a59a4b8aecb4cab,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 8863157744576909034, guid: 4d258b23982b44445a59a4b8aecb4cab,
         type: 3}
@@ -7330,6 +7861,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey (10)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7870,6 +8406,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile Grey (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7992,6 +8533,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tile Grey
+      objectReference: {fileID: 0}
+    - target: {fileID: 5116764813932352661, guid: 4211da415cefe8f45993ee4e34805c89,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8174,6 +8720,12 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 745227487}
   m_Enabled: 1
+--- !u!4 &1540641808795954830 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 153659513103456187, guid: 85272274d7616a5409a713712c4b47ad,
+    type: 3}
+  m_PrefabInstance: {fileID: 1540641808795954818}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2458886901145546425
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8440,6 +8992,7 @@ SceneRoots:
   - {fileID: 1575745435}
   - {fileID: 277344275}
   - {fileID: 1626235502}
+  - {fileID: 1194078030}
   - {fileID: 731242465}
   - {fileID: 392829236}
   - {fileID: 1949545113}

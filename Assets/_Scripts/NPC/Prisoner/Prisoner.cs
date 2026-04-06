@@ -83,7 +83,8 @@ public class Prisoner : NPC
     // 아래 internal 멤버는 외부 상태 클래스(PrisonerXxxState)에서만 사용
     internal bool MoveToQueuePoint() => MoveToPoint(QueuePosition);
     internal bool MoveToReceivePoint() => MoveToPoint(ReceivePosition);
-    internal bool MoveToPrisonPoint() => MoveToPoint(PrisonPosition);
+    // 슬롯 도착 시 _prisonPoint의 rotation으로 전환 (그리드 오브젝트 +Z 방향으로 정렬)
+    internal bool MoveToPrisonPoint() => MoveToPoint(PrisonPosition, arrivalRotation: _prisonPoint != null ? _prisonPoint.rotation : null);
 
     internal void EnterWaitForCuff() => ChangeState(_waitForCuffState);
     internal void EnterInPrison() => ChangeState(_inPrisonState);

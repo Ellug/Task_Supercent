@@ -46,7 +46,8 @@ public abstract class NPC : MonoBehaviour
     }
 
     // targetPosition을 향해 이동 — stopDistance 이내 도착 시 true 반환
-    protected internal bool MoveToPoint(Vector3 targetPosition, float customArriveDistance = -1f)
+    // arrivalRotation이 지정된 경우 도착 시 해당 방향으로 회전
+    protected internal bool MoveToPoint(Vector3 targetPosition, float customArriveDistance = -1f, Quaternion? arrivalRotation = null)
     {
         float stopDistance = customArriveDistance >= 0f ? customArriveDistance : ArriveDistance;
 
@@ -56,7 +57,11 @@ public abstract class NPC : MonoBehaviour
 
         float remaining = toTarget.magnitude;
         if (remaining <= stopDistance)
+        {
+            if (arrivalRotation.HasValue)
+                transform.rotation = arrivalRotation.Value;
             return true;
+        }
 
         Vector3 direction = toTarget / remaining;
         float step = MoveSpeed * Time.deltaTime;
@@ -65,6 +70,6 @@ public abstract class NPC : MonoBehaviour
         if (RotateToMoveDirection)
             transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
 
-        return remaining <= stopDistance;
+        return false;
     }
 }

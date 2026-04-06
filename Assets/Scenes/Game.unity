@@ -8212,7 +8212,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _popupParent: {fileID: 1949545113}
-  _popupPrefab: {fileID: 6884466541113894, guid: 2c3f1692d9dc61442bb16f0057a4aa80,
+  _popupPrefab: {fileID: 8597689026086635005, guid: 3fe2093047c435944ae1f7ea2917eb3e,
     type: 3}
   _targetCamera: {fileID: 330585545}
   _duration: 1
@@ -9693,8 +9693,54 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
         type: 3}
+      propertyPath: _labelCanvas
+      value: 
+      objectReference: {fileID: 1949545112}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _maxImagePrefab
+      value: 
+      objectReference: {fileID: 8597689026086635005, guid: 3fe2093047c435944ae1f7ea2917eb3e,
+        type: 3}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
       propertyPath: _consumeInterval
       value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _oreLayerSpacing
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _oreColumnSpacing
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _submitMaxCapacity
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _collectMaxCapacity
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _collectColumnSpacing
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _submitMaxLabelOffset.y
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
+        type: 3}
+      propertyPath: _collectMaxLabelOffset.y
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7784421831138484913, guid: 267d6d4221bf07844b36f2aea067f60f,
         type: 3}

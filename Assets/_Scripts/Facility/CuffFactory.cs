@@ -35,7 +35,8 @@ public class CuffFactory : FacilityBase
     [SerializeField, Min(0.1f)] private float _railMoveSpeed = 3f;
 
     [Header("Max Label")]
-    [SerializeField] private GameObject _maxTextPrefab;
+    [SerializeField] private GameObject _maxImagePrefab;
+    [SerializeField] private Canvas _labelCanvas;
     [SerializeField] private Vector3 _submitMaxLabelOffset = new(0f, 2f, 0f);
     [SerializeField] private Vector3 _collectMaxLabelOffset = new(0f, 2f, 0f);
 
@@ -104,8 +105,9 @@ public class CuffFactory : FacilityBase
                 _railMoveSpeed);
         }
 
-        _submitMaxLabelRuntime = new FacilityMaxLabelRuntime(_maxTextPrefab, InputZone.transform, _submitMaxLabelOffset);
-        _collectMaxLabelRuntime = new FacilityMaxLabelRuntime(_maxTextPrefab, _collectZone.transform, _collectMaxLabelOffset);
+        RectTransform labelParent = _labelCanvas != null ? _labelCanvas.transform as RectTransform : null;
+        _submitMaxLabelRuntime = new FacilityMaxLabelRuntime(_maxImagePrefab, labelParent, _labelCanvas, InputZone.transform, _submitMaxLabelOffset);
+        _collectMaxLabelRuntime = new FacilityMaxLabelRuntime(_maxImagePrefab, labelParent, _labelCanvas, _collectZone.transform, _collectMaxLabelOffset);
     }
 
     void LateUpdate()
@@ -118,6 +120,10 @@ public class CuffFactory : FacilityBase
 
         _submitMaxLabelRuntime.SetVisible(submitFull);
         _collectMaxLabelRuntime.SetVisible(collectFull);
+
+        Camera cam = Camera.main;
+        _submitMaxLabelRuntime.Tick(cam);
+        _collectMaxLabelRuntime.Tick(cam);
 
         _cuffOutputRuntime.SyncVisuals();
 
@@ -164,13 +170,13 @@ public class CuffFactory : FacilityBase
         return base.CanConsume(resource) && _oreInputViews.MatchesResource(resource);
     }
 
-    // 현재 버퍼에 적재 가능한 광석 수량 반환
+    // Collect Zone이 가득 찬 경우에만 소비 중단, 그 외엔 Submit Zone의 StoredAmount 기준으로 소비
     protected override int GetRemainingCapacity(ResourceData resource)
     {
         if (_collectZoneCapacityRuntime != null && _collectZoneCapacityRuntime.IsFull)
             return 0;
 
-        return int.MaxValue;
+        return InputZone != null ? InputZone.StoredAmount : int.MaxValue;
     }
 
     // InputZone에서 광석을 받으면 뷰 스폰
@@ -191,7 +197,11 @@ public class CuffFactory : FacilityBase
         if (_submitZoneCapacityRuntime == null)
             return 0;
 
-        return _submitZoneCapacityRuntime.TryAdd(amount);
+        int added = _submitZoneCapacityRuntime.TryAdd(amount);
+        if (added > 0)
+            _oreInputViews.Add(added);
+
+        return added;
     }
 
     private void ValidateResourceBindingsOrThrow()

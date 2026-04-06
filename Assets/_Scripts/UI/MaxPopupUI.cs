@@ -15,6 +15,7 @@ public class MaxPopupUI : MonoBehaviour
     [Header("Display")]
     [SerializeField, Min(0.01f)] private float _duration = 0.45f;
     [SerializeField, Min(0f)] private float _riseDistance = 0.45f;
+    [SerializeField, Range(0f, 1f)] private float _fadeOutStart = 0.5f;
     [SerializeField] private Vector3 _defaultWorldOffset = new(0f, 2.2f, 0f);
     [SerializeField, Min(0f)] private float _defaultTowardCameraOffset = 0.4f;
 
@@ -22,6 +23,7 @@ public class MaxPopupUI : MonoBehaviour
     {
         public GameObject View;
         public RectTransform Rect;
+        public CanvasGroup CanvasGroup;
         public float Elapsed;
         public Vector3 AnchorWorldPosition;
         public Transform FollowTarget;
@@ -127,10 +129,15 @@ public class MaxPopupUI : MonoBehaviour
             throw new InvalidOperationException("[MaxPopupUI] _popupPrefab must use RectTransform.");
         }
 
+        if (!popupView.TryGetComponent(out CanvasGroup canvasGroup))
+            canvasGroup = popupView.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 1f;
+
         ActivePopup popup = new()
         {
             View = popupView,
             Rect = popupRect,
+            CanvasGroup = canvasGroup,
             Elapsed = 0f,
             AnchorWorldPosition = anchorWorldPosition,
             FollowTarget = followTarget,
@@ -175,6 +182,11 @@ public class MaxPopupUI : MonoBehaviour
             popup.TowardCameraOffset);
 
         worldPosition += Vector3.up * (_riseDistance * t);
+
+        float fadeStart = Mathf.Clamp01(_fadeOutStart);
+        if (popup.CanvasGroup != null)
+            popup.CanvasGroup.alpha = t > fadeStart ? 1f - Mathf.Clamp01((t - fadeStart) / (1f - fadeStart)) : 1f;
+
         Vector3 screenPosition = camera.WorldToScreenPoint(worldPosition);
 
         if (screenPosition.z <= 0f)

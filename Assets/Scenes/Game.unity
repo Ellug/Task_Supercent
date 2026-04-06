@@ -8217,6 +8217,7 @@ MonoBehaviour:
   _targetCamera: {fileID: 330585545}
   _duration: 1
   _riseDistance: 1
+  _fadeOutStart: 0.5
   _defaultWorldOffset: {x: 0, y: 2.2, z: 0}
   _defaultTowardCameraOffset: 0.4
 --- !u!114 &1949545110
@@ -9720,12 +9721,12 @@ PrefabInstance:
     - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
         type: 3}
       propertyPath: _submitMaxCapacity
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
         type: 3}
       propertyPath: _collectMaxCapacity
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 410000000000000123, guid: 267d6d4221bf07844b36f2aea067f60f,
         type: 3}

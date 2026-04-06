@@ -106,7 +106,7 @@ public class PrisonerManager : MonoBehaviour
         if (_receiveSlot == null || _deskFacility == null)
             return;
 
-        if (!IsJailOpen)
+        if (!CanReceivePrisoner)
             return;
 
         if (!_deskFacility.IsPrisonerCuffFilled(_receiveSlot.Prisoner))
@@ -130,7 +130,7 @@ public class PrisonerManager : MonoBehaviour
         if (_receiveSlot == null || !_receiveSlot.ReadyForSupply || _deskFacility == null)
             return;
 
-        if (!IsJailOpen)
+        if (!CanReceivePrisoner)
             return;
 
         if (_deskFacility.IsPrisonerCuffFilled(_receiveSlot.Prisoner))
@@ -408,6 +408,9 @@ public class PrisonerManager : MonoBehaviour
     }
 
     private bool IsJailOpen => _jailFacility == null || _jailFacility.IsOpen;
+
+    // Jail이 닫혀도 entGridArea 대기 인원이 3명 이하면 수령을 계속 허용
+    private bool CanReceivePrisoner => IsJailOpen || _entSlots.Count <= 3;
 
     // 카메라/가이드 연출용으로 표시 가능한 Prisoner 1명 반환
     public bool TryGetGuidePrisoner(out Prisoner prisoner)

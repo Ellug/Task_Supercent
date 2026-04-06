@@ -91,7 +91,7 @@ public class CuffFactory : FacilityBase
 
         _cuffOutputRuntime = new FacilityZoneOutputRuntime(_collectZone, cuffOutputViews);
         _productionRuntime = new FacilityTimedProductionRuntime(ProduceIntervalSeconds);
-        _submitZoneCapacityRuntime = new FacilityZoneCapacityRuntime(InputZone, _submitMaxCapacity, true);
+        _submitZoneCapacityRuntime = new FacilityZoneCapacityRuntime(InputZone, _submitMaxCapacity, false);
         _collectZoneCapacityRuntime = new FacilityZoneCapacityRuntime(_collectZone, _collectMaxCapacity, false);
 
         if (_spawnPoint != null && _pathway != null && _endpoint != null)
@@ -170,13 +170,10 @@ public class CuffFactory : FacilityBase
         return base.CanConsume(resource) && _oreInputViews.MatchesResource(resource);
     }
 
-    // Collect Zone이 가득 찬 경우에만 소비 중단, 그 외엔 Submit Zone의 StoredAmount 기준으로 소비
+    // Submit Zone의 남은 용량 기준으로 소비 — Collect 상태와 무관하게 Ore는 계속 받음
     protected override int GetRemainingCapacity(ResourceData resource)
     {
-        if (_collectZoneCapacityRuntime != null && _collectZoneCapacityRuntime.IsFull)
-            return 0;
-
-        return InputZone != null ? InputZone.StoredAmount : int.MaxValue;
+        return _submitZoneCapacityRuntime != null ? _submitZoneCapacityRuntime.Remaining : int.MaxValue;
     }
 
     // InputZone에서 광석을 받으면 뷰 스폰

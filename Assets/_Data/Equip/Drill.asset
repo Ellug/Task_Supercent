@@ -17,6 +17,6 @@ MonoBehaviour:
   _playerViewPrefab: {fileID: 200100000000000001, guid: beb3fb34fc7742f9927f488cf9b95530,
     type: 3}
   _mineRange: 5
-  _mineInterval: 0.2
+  _mineInterval: 0.1
   _simultaneousMineCount: 1
   _carryCapacityBonus: 10

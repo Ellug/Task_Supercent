@@ -25,6 +25,9 @@ public class PlayerController : MonoBehaviour, IInteractionActor
 
     [Header("Mine")]
     [SerializeField, Range(-1f, 1f)] private float _mineForwardDotMin = 0f;
+    [SerializeField, Min(0f)] private float _mineRangeVisualHoldDuration = 1f;
+    [SerializeField] private MineArea _mineArea;
+    [SerializeField, Min(0f)] private float _mineAreaExitDistance = 2f;
 
     [Header("Interaction Transfer")]
     [SerializeField, Min(0f)] private float _transferTickInterval = 0.01f;
@@ -35,6 +38,8 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     private bool _isInMaxLoop;
     private float _nextMaxPopupTime;
     private Vector2 _lastMoveInput;
+    private float _mineRangeVisualOffTime = -1f;
+    private BoxCollider _mineAreaCollider;
     private readonly Dictionary<ResourceData, int> _lastCarryCountByResource = new();
     private int _carryCapacityBonus;
 
@@ -158,7 +163,29 @@ public class PlayerController : MonoBehaviour, IInteractionActor
         }
 
         bool hasMineInRange = _resourceManager.TryGetMineInFront(transform.position, transform.forward, currentEquip.MineRange, _mineForwardDotMin, out Mine mine);
-        _equip.SetMiningRangeVisual(hasMineInRange);
+
+        if (hasMineInRange)
+        {
+            _mineRangeVisualOffTime = -1f;
+            _equip.SetMiningRangeVisual(true);
+        }
+        else
+        {
+            // Mine Area 밖으로 일정 거리 이상 벗어났으면 즉시 off
+            if (IsOutsideMineArea(_mineAreaExitDistance))
+            {
+                _mineRangeVisualOffTime = -1f;
+                _equip.SetMiningRangeVisual(false);
+            }
+            else
+            {
+                if (_mineRangeVisualOffTime < 0f)
+                    _mineRangeVisualOffTime = Time.time + _mineRangeVisualHoldDuration;
+
+                if (Time.time >= _mineRangeVisualOffTime)
+                    _equip.SetMiningRangeVisual(false);
+            }
+        }
 
         if (!hasMineInRange) return;
 
@@ -196,6 +223,22 @@ public class PlayerController : MonoBehaviour, IInteractionActor
     private bool TryAddCarriedResource(ResourceData resource, int amount, out int added)
     {
         return _resourceStack.TryAdd(resource, amount, out added) && added > 0;
+    }
+
+    // Mine Area BoxCollider 경계에서 exitDistance 이상 벗어났는지 확인
+    private bool IsOutsideMineArea(float exitDistance)
+    {
+        if (_mineArea == null)
+            return false;
+
+        if (_mineAreaCollider == null)
+            _mineAreaCollider = _mineArea.GetComponent<BoxCollider>();
+
+        if (_mineAreaCollider == null)
+            return false;
+
+        Vector3 closest = _mineAreaCollider.ClosestPoint(transform.position);
+        return (transform.position - closest).sqrMagnitude > exitDistance * exitDistance;
     }
 
     // 장비 레벨 변경 시 누적 CarryCapacityBonus 재계산 후 Ore 슬롯 용량 갱신

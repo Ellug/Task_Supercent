@@ -24,10 +24,11 @@ public class CameraDirector : MonoBehaviour
         public CameraShot Shot;
         public Transform Target;
         public Func<IEnumerator> OnArrival;
+        public Func<IEnumerator> OnReturn;
     }
 
     // 연출 요청 — 진행 중이면 큐잉하거나 무시
-    public void Play(CameraShot shot, Transform target, Func<IEnumerator> onArrival = null)
+    public void Play(CameraShot shot, Transform target, Func<IEnumerator> onArrival = null, Func<IEnumerator> onReturn = null)
     {
         if (shot == null || target == null)
             return;
@@ -41,15 +42,16 @@ public class CameraDirector : MonoBehaviour
                     Shot = shot,
                     Target = target,
                     OnArrival = onArrival,
+                    OnReturn = onReturn,
                 });
             }
             return;
         }
 
-        _currentCoroutine = StartCoroutine(RunShot(shot, target, onArrival));
+        _currentCoroutine = StartCoroutine(RunShot(shot, target, onArrival, onReturn));
     }
 
-    private IEnumerator RunShot(CameraShot shot, Transform target, Func<IEnumerator> onArrival)
+    private IEnumerator RunShot(CameraShot shot, Transform target, Func<IEnumerator> onArrival, Func<IEnumerator> onReturn = null)
     {
         if (_camera == null)
         {
@@ -100,13 +102,21 @@ public class CameraDirector : MonoBehaviour
         if (_cameraController != null)
             _cameraController.enabled = true;
 
+        // 복귀 완료 후 콜백
+        if (onReturn != null)
+        {
+            IEnumerator returnRoutine = onReturn.Invoke();
+            if (returnRoutine != null)
+                yield return StartCoroutine(returnRoutine);
+        }
+
         _currentCoroutine = null;
 
         // 큐에 대기 중인 연출 실행
         if (_queue.Count > 0)
         {
             QueuedShot next = _queue.Dequeue();
-            _currentCoroutine = StartCoroutine(RunShot(next.Shot, next.Target, next.OnArrival));
+            _currentCoroutine = StartCoroutine(RunShot(next.Shot, next.Target, next.OnArrival, next.OnReturn));
         }
     }
 

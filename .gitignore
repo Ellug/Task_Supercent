@@ -93,3 +93,6 @@ crashlytics-build.properties
 
 # Local .NET CLI cache
 .dotnet/
+
+# Docs folder
+/Docs/

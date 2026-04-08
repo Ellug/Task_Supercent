@@ -1,4 +1,4 @@
-# Task_Supercent
+# Prison Life 모작
 
 하이브리드 캐주얼 루프 게임 — 슈퍼센트 과제전형 프로젝트  
 Unity 2022.3.62f2 · URP · Android / PC · 개인 개발 · 2026.04

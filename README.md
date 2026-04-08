@@ -8,16 +8,12 @@ Unity 2022.3.62f2 · URP · Android / PC · 개인 개발 · 2026.04
 플레이어가 광산에서 Ore를 채굴하면 CuffFactory → Worker → DeskFacility → Prisoner → JailFacility 순서로 자원이 흘러가는 방치형 루프 게임.  
 진행은 ScriptableObject에 선언적으로 정의된 Stage Flow 규칙에 따라 Zone 이벤트가 발화될 때마다 NPC 고용·장비 업그레이드·감옥 확장이 단계적으로 열린다.
 
-## 기술 스택
-
 | 분류 | 내용 |
 |---|---|
 | 엔진 | Unity 2022.3.62f2 · URP |
 | 언어 | C# |
 | 입력 | New Input System + FloatingJoystick 병행 (`activeInputHandler: 2`) |
-| UI | UGUI · TextMeshPro · 커스텀 TMP 외곽선 컴포넌트 |
-| 렌더링 | URP 3단계 품질 (Performant / Balanced / High Fidelity) |
-| 빌드 대상 | Android (Balanced) · PC (High Fidelity) |
+| UI | UGUI · TextMeshPro |
 
 ---
 
@@ -456,10 +452,3 @@ Assets/
 ```
 
 ---
-
-## 개선 과제
-
-- **자동화 테스트 부재** — Zone 전이·FSM 상태 전환·Jail 용량 관련 PlayMode 테스트 필요
-- **직렬화 잔여 필드** — 리팩터링 후 씬/프리팹에 사용되지 않는 필드 흔적 잔류 (`FormerlySerializedAs` 정리 필요)
-- **FindObjectsByType 사용** — `ZonePurchaseUpgradeService.ResolveEquip()`에서 초기화 시점에 사용. Direct Reference 캐싱으로 개선 여지
-- **밸런스 소스 분산** — SO 기본값·Prefab 기본값·Scene Override 세 계층이 혼재해 최종 적용값 추적이 어려움
